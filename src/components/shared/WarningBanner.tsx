@@ -11,22 +11,22 @@ interface WarningBannerProps {
 
 const STYLES = {
   emergency: {
-    container: "border-red-500 bg-red-50",
-    icon: "text-red-600",
-    title: "text-red-800",
-    message: "text-red-700",
+    container: "border-red-500 bg-red-50 dark:bg-red-950/60 dark:border-red-600",
+    icon: "text-red-600 dark:text-red-400",
+    title: "text-red-800 dark:text-red-300",
+    message: "text-red-700 dark:text-red-400",
   },
   caution: {
-    container: "border-amber-400 bg-amber-50",
-    icon: "text-amber-600",
-    title: "text-amber-800",
-    message: "text-amber-700",
+    container: "border-amber-400 bg-amber-50 dark:bg-amber-950/60 dark:border-amber-500",
+    icon: "text-amber-600 dark:text-amber-400",
+    title: "text-amber-800 dark:text-amber-300",
+    message: "text-amber-700 dark:text-amber-400",
   },
   info: {
-    container: "border-blue-400 bg-blue-50",
-    icon: "text-blue-600",
-    title: "text-blue-800",
-    message: "text-blue-700",
+    container: "border-blue-400 bg-blue-50 dark:bg-blue-950/60 dark:border-blue-500",
+    icon: "text-blue-600 dark:text-[#0a84ff]",
+    title: "text-blue-800 dark:text-blue-300",
+    message: "text-blue-700 dark:text-blue-400",
   },
 };
 

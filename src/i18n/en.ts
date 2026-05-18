@@ -39,6 +39,7 @@ export const en = {
     backToSearch: "Drug Search",
     disclaimer: "Always consult a healthcare professional",
     disclaimerDesc: "This information is educational only. Never start, stop, or change medication without talking to your doctor or pharmacist.",
+    addToFavorites: "Save", removeFromFavorites: "Saved",
   },
   symptoms: {
     title: "Symptom Checker", subtitle: "Select your symptoms to get OTC medication guidance",
@@ -135,10 +136,44 @@ export const en = {
       { name: "Crisis Text Line", number: "Text HOME to 741741", desc: "Text-based support" },
     ],
   },
+  onboarding: {
+    skip: "Skip",
+    next: "Next",
+    getStarted: "Get Started",
+    slide1Icon: "💊",
+    slide1Title: "Know Your Medicine",
+    slide1Desc: "Look up any medication instantly. Understand uses, side effects, and dosage — before you take it.",
+    slide2Icon: "🩺",
+    slide2Title: "Check Symptoms Safely",
+    slide2Desc: "Select symptoms to get real-time OTC guidance. Emergency warning signs are flagged as you type.",
+    slide3Icon: "🛡️",
+    slide3Title: "Always Stay Safe",
+    slide3Desc: "Safety information and emergency resources are always one tap away. We flag danger so you don't have to.",
+  },
+  favorites: {
+    title: "My Favorites",
+    empty: "Tap ♡ on any drug to save it here.",
+    viewAll: "View all",
+    addHint: "Save drugs for quick access",
+  },
+  reminders: {
+    title: "Medication Reminders",
+    add: "+ Add",
+    empty: "No reminders yet. Tap + to add one.",
+    drugName: "Medication name",
+    dosage: "Dosage",
+    time: "Reminder time",
+    daily: "Daily",
+    save: "Save Reminder",
+    cancel: "Cancel",
+    drugNamePlaceholder: "e.g. Ibuprofen 200mg",
+    dosagePlaceholder: "e.g. 1 tablet",
+    delete: "Delete",
+  },
   warnings: {
     emergency: "Seek Emergency Help Now", caution: "Caution", info: "Information",
   },
-  common: { back: "Back", viewAll: "View all", clear: "Clear" },
+  common: { back: "Back", viewAll: "View all", clear: "Clear", darkMode: "Dark", lightMode: "Light" },
 };
 
 export type Translations = typeof en;

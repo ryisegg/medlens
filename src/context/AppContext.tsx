@@ -14,6 +14,7 @@ import type {
   OtcRxFilter,
   PillIdentifierQuery,
   PillIdentifierResult,
+  Reminder,
   SymptomSuggestion,
 } from "../types";
 import { getDrugById, getDrugsByCategory } from "../data/drugs";
@@ -26,43 +27,76 @@ const EMPTY_PILL_QUERY: PillIdentifierQuery = {
   color: "", shape: "", imprint: "", strength: "", scored: "",
 };
 
-function loadRecentlyViewed(): Drug[] {
+// ── localStorage helpers ────────────────────────────────────────────────────
+function loadStr(key: string, fallback: string): string {
+  try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; }
+}
+function loadJSON<T>(key: string, fallback: T): T {
   try {
-    const stored = localStorage.getItem("medlens_recent");
-    if (!stored) return [];
-    const ids: string[] = JSON.parse(stored);
-    return ids.map((id) => getDrugById(id)).filter(Boolean) as Drug[];
-  } catch {
-    return [];
-  }
+    const s = localStorage.getItem(key);
+    return s ? (JSON.parse(s) as T) : fallback;
+  } catch { return fallback; }
+}
+function saveJSON(key: string, value: unknown) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
 }
 
 function loadLanguage(): Language {
-  try {
-    const stored = localStorage.getItem("medlens_lang");
-    if (stored === "en" || stored === "zh") return stored;
-  } catch {
-    // ignore
-  }
-  return "en";
+  const v = loadStr("medlens_lang", "en");
+  return (v === "en" || v === "zh") ? v : "en";
+}
+function loadDark(): boolean {
+  return loadStr("medlens_theme", "light") === "dark";
+}
+function loadOnboarded(): boolean {
+  return loadStr("medlens_onboarded", "") === "1";
+}
+function loadRecentlyViewed(): Drug[] {
+  const ids = loadJSON<string[]>("medlens_recent", []);
+  return ids.map((id) => getDrugById(id)).filter(Boolean) as Drug[];
+}
+function loadFavorites(): string[] {
+  return loadJSON<string[]>("medlens_favorites", []);
+}
+function loadReminders(): Reminder[] {
+  return loadJSON<Reminder[]>("medlens_reminders", []);
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageRaw] = useState<Language>(loadLanguage);
+  const [isDark, setIsDark] = useState<boolean>(loadDark);
+  const [hasOnboarded, setHasOnboarded] = useState<boolean>(loadOnboarded);
   const [searchQuery, setSearchQueryRaw] = useState("");
   const [activeCategory, setActiveCategory] = useState<DrugCategory | "All">("All");
   const [otcRxFilter, setOtcRxFilter] = useState<OtcRxFilter>("all");
   const [recentlyViewed, setRecentlyViewed] = useState<Drug[]>(loadRecentlyViewed);
+  const [favorites, setFavorites] = useState<string[]>(loadFavorites);
+  const [reminders, setReminders] = useState<Reminder[]>(loadReminders);
   const [symptomInput, setSymptomInput] = useState("");
   const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [symptomSuggestions, setSymptomSuggestions] = useState<SymptomSuggestion[]>([]);
   const [pillQuery, setPillQuery] = useState<PillIdentifierQuery>(EMPTY_PILL_QUERY);
   const [identifierResults, setIdentifierResults] = useState<PillIdentifierResult[]>([]);
 
-  // ── Language ─────────────────────────────────────────────────────────────
+  // ── Language ──────────────────────────────────────────────────────────────
   const setLanguage = useCallback((lang: Language) => {
     setLanguageRaw(lang);
     try { localStorage.setItem("medlens_lang", lang); } catch { /* ignore */ }
+  }, []);
+
+  // ── Theme ─────────────────────────────────────────────────────────────────
+  const toggleDark = useCallback(() => {
+    setIsDark((prev) => {
+      const next = !prev;
+      try { localStorage.setItem("medlens_theme", next ? "dark" : "light"); } catch {}
+      return next;
+    });
+  }, []);
+
+  // ── Onboarding ────────────────────────────────────────────────────────────
+  const completeOnboarding = useCallback(() => {
+    setHasOnboarded(true);
+    try { localStorage.setItem("medlens_onboarded", "1"); } catch {}
   }, []);
 
   // ── Drug search ───────────────────────────────────────────────────────────
@@ -91,10 +125,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setRecentlyViewed((prev) => {
       const filtered = prev.filter((d) => d.id !== drug.id);
       const updated = [drug, ...filtered].slice(0, 5);
-      try {
-        localStorage.setItem("medlens_recent", JSON.stringify(updated.map((d) => d.id)));
-      } catch { /* ignore */ }
+      saveJSON("medlens_recent", updated.map((d) => d.id));
       return updated;
+    });
+  }, []);
+
+  // ── Favorites ─────────────────────────────────────────────────────────────
+  const toggleFavorite = useCallback((drugId: string) => {
+    setFavorites((prev) => {
+      const next = prev.includes(drugId)
+        ? prev.filter((id) => id !== drugId)
+        : [...prev, drugId];
+      saveJSON("medlens_favorites", next);
+      return next;
+    });
+  }, []);
+
+  // ── Reminders ─────────────────────────────────────────────────────────────
+  const addReminder = useCallback((data: { drugName: string; dosage: string; time: string }) => {
+    const reminder: Reminder = { id: Date.now().toString(), ...data };
+    setReminders((prev) => {
+      const next = [...prev, reminder];
+      saveJSON("medlens_reminders", next);
+      return next;
+    });
+  }, []);
+
+  const removeReminder = useCallback((id: string) => {
+    setReminders((prev) => {
+      const next = prev.filter((r) => r.id !== id);
+      saveJSON("medlens_reminders", next);
+      return next;
     });
   }, []);
 
@@ -111,7 +172,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setSymptomSuggestions([]);
   }, []);
 
-  // Build combined symptom string from selected chips + free text
   const combinedSymptomInput = useMemo(() => {
     const chipKeywords = selectedSymptoms
       .flatMap((chip) => CHIP_SYMPTOM_KEYWORDS[chip] ?? [chip])
@@ -119,7 +179,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return [chipKeywords, symptomInput].filter(Boolean).join(" ");
   }, [selectedSymptoms, symptomInput]);
 
-  // Real-time red flag detection
   const detectedRedFlags = useMemo(
     () => detectRedFlags(combinedSymptomInput),
     [combinedSymptomInput],
@@ -141,11 +200,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AppContextValue>(
     () => ({
       language, setLanguage,
+      isDark, toggleDark,
+      hasOnboarded, completeOnboarding,
       searchQuery, setSearchQuery,
       activeCategory, setActiveCategory,
       otcRxFilter, setOtcRxFilter,
       filteredDrugs,
       recentlyViewed, addToRecentlyViewed,
+      favorites, toggleFavorite,
+      reminders, addReminder, removeReminder,
       symptomInput, setSymptomInput,
       selectedSymptoms, toggleSymptom, clearSelectedSymptoms,
       detectedRedFlags,
@@ -155,17 +218,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }),
     [
       language, setLanguage,
+      isDark, toggleDark,
+      hasOnboarded, completeOnboarding,
       searchQuery, setSearchQuery,
-      activeCategory,
-      otcRxFilter,
-      filteredDrugs,
+      activeCategory, otcRxFilter, filteredDrugs,
       recentlyViewed, addToRecentlyViewed,
-      symptomInput,
-      selectedSymptoms, toggleSymptom, clearSelectedSymptoms,
-      detectedRedFlags,
-      symptomSuggestions, runSymptomCheck,
-      pillQuery,
-      identifierResults, runIdentifier,
+      favorites, toggleFavorite,
+      reminders, addReminder, removeReminder,
+      symptomInput, selectedSymptoms, toggleSymptom, clearSelectedSymptoms,
+      detectedRedFlags, symptomSuggestions, runSymptomCheck,
+      pillQuery, identifierResults, runIdentifier,
     ],
   );
 

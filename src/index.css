@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: applies dark: variants when <html> has class="dark" */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Inter", system-ui, sans-serif;
   --color-brand:          #2563eb;
@@ -28,17 +31,25 @@
     color: #1c1c1e;
     font-family: "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
-    /* iOS safe area support */
     padding-top: env(safe-area-inset-top);
+  }
+
+  /* Dark mode body */
+  html.dark body {
+    background: #000000;
+    color: #ffffff;
+    color-scheme: dark;
   }
 
   :focus-visible {
     @apply outline-none ring-2 ring-blue-500 ring-offset-2;
   }
 
-  /* Smooth scrolling for page content */
   .page-scroll {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
+
+  /* Smooth pill transitions */
+  * { -webkit-tap-highlight-color: transparent; }
 }

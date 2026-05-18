@@ -2,18 +2,52 @@ import { useApp } from "../../context/AppContext";
 import { getTranslations } from "../../i18n";
 import type { Language } from "../../types";
 
+function MoonIcon() {
+  return (
+    <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
+    </svg>
+  );
+}
+
+function SunIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="5" />
+      <path strokeLinecap="round" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+    </svg>
+  );
+}
+
 export function TopBar() {
-  const { language, setLanguage } = useApp();
+  const { language, setLanguage, isDark, toggleDark } = useApp();
   const t = getTranslations(language);
 
   return (
     <header
-      className="fixed left-0 right-0 top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-xl"
+      className="fixed left-0 right-0 top-0 z-40 border-b border-slate-200/60 bg-white/90 backdrop-blur-xl dark:border-[#3a3a3c] dark:bg-[#1c1c1e]/90"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="flex h-12 items-center justify-between px-4">
-        <span className="text-base font-bold text-blue-700">{t.appName}</span>
-        <LanguageSwitcher language={language} setLanguage={setLanguage} />
+        <div className="flex items-center gap-1.5">
+          <span className="text-lg">💊</span>
+          <span className="text-base font-bold text-blue-700 dark:text-[#0a84ff]">{t.appName}</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Dark mode toggle */}
+          <button
+            type="button"
+            onClick={toggleDark}
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition active:scale-90 dark:bg-[#2c2c2e] dark:text-[#8e8e93]"
+            aria-label={isDark ? t.common.lightMode : t.common.darkMode}
+          >
+            {isDark ? <SunIcon /> : <MoonIcon />}
+          </button>
+
+          {/* Language switcher */}
+          <LanguageSwitcher language={language} setLanguage={setLanguage} />
+        </div>
       </div>
     </header>
   );
@@ -21,7 +55,7 @@ export function TopBar() {
 
 function LanguageSwitcher({ language, setLanguage }: { language: Language; setLanguage: (l: Language) => void }) {
   return (
-    <div className="flex items-center rounded-full border border-slate-200 bg-slate-50 p-0.5 text-xs font-medium">
+    <div className="flex items-center rounded-full border border-slate-200 bg-slate-50 p-0.5 text-xs font-medium dark:border-[#3a3a3c] dark:bg-[#2c2c2e]">
       {(["en", "zh"] as Language[]).map((lang) => (
         <button
           key={lang}
@@ -29,8 +63,8 @@ function LanguageSwitcher({ language, setLanguage }: { language: Language; setLa
           onClick={() => setLanguage(lang)}
           className={`rounded-full px-2.5 py-1 transition ${
             language === lang
-              ? "bg-blue-600 text-white shadow-sm"
-              : "text-slate-500 hover:text-slate-800"
+              ? "bg-blue-600 text-white shadow-sm dark:bg-[#0a84ff]"
+              : "text-slate-500 dark:text-[#8e8e93]"
           }`}
         >
           {lang === "en" ? "EN" : "中文"}

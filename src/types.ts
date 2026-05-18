@@ -97,10 +97,25 @@ export type WarningLevel = "emergency" | "caution" | "info";
 
 export type OtcRxFilter = "all" | "OTC" | "Rx";
 
+export interface Reminder {
+  id: string;
+  drugName: string;
+  dosage: string;
+  time: string;
+}
+
 export interface AppContextValue {
   // Language
   language: Language;
   setLanguage: (lang: Language) => void;
+
+  // Theme
+  isDark: boolean;
+  toggleDark: () => void;
+
+  // Onboarding
+  hasOnboarded: boolean;
+  completeOnboarding: () => void;
 
   // Drug search
   searchQuery: string;
@@ -114,6 +129,15 @@ export interface AppContextValue {
   // Recently viewed
   recentlyViewed: Drug[];
   addToRecentlyViewed: (drug: Drug) => void;
+
+  // Favorites
+  favorites: string[];
+  toggleFavorite: (drugId: string) => void;
+
+  // Reminders
+  reminders: Reminder[];
+  addReminder: (data: { drugName: string; dosage: string; time: string }) => void;
+  removeReminder: (id: string) => void;
 
   // Symptom checker
   symptomInput: string;
