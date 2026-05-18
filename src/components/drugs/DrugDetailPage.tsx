@@ -34,7 +34,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 function HeartIcon({ filled }: { filled: boolean }) {
   return filled ? (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 01112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
+      <path d="M11.645 20.91l-.007-.003-.022-.012a15.247 15.247 0 01-.383-.218 25.18 25.18 0 01-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0112 5.052 5.5 5.5 0 0116.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 01-4.244 3.17 15.247 15.247 0 01-.383.219l-.022.012-.007.004-.003.001a.752.752 0 01-.704 0l-.003-.001z" />
     </svg>
   ) : (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -55,7 +55,6 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
 
   return (
     <div className="space-y-3 px-4 py-4">
-      {/* Header card */}
       <Card>
         <div className="flex items-start justify-between gap-3">
           <div className="flex flex-wrap gap-1.5 mb-3 flex-1">
@@ -70,7 +69,6 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
               {drug.category}
             </span>
           </div>
-          {/* Favorite button */}
           <button
             type="button"
             onClick={() => toggleFavorite(drug.id)}
@@ -99,7 +97,6 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
 
       <WarningBanner level="caution" title={t.drug.disclaimer} message={t.drug.disclaimerDesc} />
 
-      {/* Uses */}
       <Card>
         <SectionTitle>{t.drug.uses}</SectionTitle>
         <ul className="space-y-2">
@@ -112,13 +109,11 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
         </ul>
       </Card>
 
-      {/* Mechanism */}
       <Card>
         <SectionTitle>{t.drug.mechanism}</SectionTitle>
         <p className="text-sm text-slate-700 leading-relaxed dark:text-[#8e8e93]">{drug.mechanism}</p>
       </Card>
 
-      {/* Dosage */}
       <Card>
         <SectionTitle>{t.drug.dosageForms}</SectionTitle>
         <div className="flex flex-wrap gap-1.5 mb-4">
@@ -136,7 +131,6 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
         </ul>
       </Card>
 
-      {/* Side effects */}
       <Card>
         <SectionTitle>{t.drug.sideEffects}</SectionTitle>
         <div className="space-y-3">
@@ -160,7 +154,6 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
         </div>
       </Card>
 
-      {/* Contraindications */}
       <Card>
         <SectionTitle>{t.drug.contraindications}</SectionTitle>
         <ul className="space-y-2">
@@ -173,7 +166,6 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
         </ul>
       </Card>
 
-      {/* Interactions */}
       {drug.interactions.length > 0 && (
         <Card>
           <SectionTitle>{t.drug.interactions}</SectionTitle>
@@ -191,7 +183,6 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
         </Card>
       )}
 
-      {/* Pregnancy */}
       <Card>
         <SectionTitle>{t.drug.pregnancy}</SectionTitle>
         <div className="space-y-2">
@@ -207,7 +198,6 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
         </div>
       </Card>
 
-      {/* When to call doctor */}
       <div className="rounded-2xl border-2 border-red-200 bg-red-50 px-5 py-4 dark:border-red-800 dark:bg-red-950/40">
         <h2 className="mb-3 text-[10px] font-bold text-red-800 uppercase tracking-widest dark:text-red-300">{t.drug.whenToCallDoctor}</h2>
         <ul className="space-y-2">
@@ -220,7 +210,6 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
         </ul>
       </div>
 
-      {/* Emergency signs */}
       {drug.emergencySigns && drug.emergencySigns.length > 0 && (
         <div className="rounded-2xl border-2 border-red-500 bg-red-50 px-5 py-4 dark:border-red-600 dark:bg-red-950/60">
           <h2 className="mb-1 text-[10px] font-bold text-red-900 uppercase tracking-widest dark:text-red-300">{t.drug.emergencySigns}</h2>
@@ -236,13 +225,11 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
         </div>
       )}
 
-      {/* Footer */}
       <div className="rounded-2xl bg-white px-5 py-3 shadow-sm text-xs text-slate-400 space-y-0.5 dark:bg-[#1c1c1e] dark:text-[#636366]">
         <p>{t.drug.source}: {drug.source}</p>
         <p>{t.drug.lastReviewed}: {drug.lastReviewed}</p>
       </div>
 
-      {/* Back button */}
       <button
         type="button"
         onClick={() => navigate("/drugs")}
