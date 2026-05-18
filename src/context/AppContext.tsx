@@ -88,7 +88,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const toggleDark = useCallback(() => {
     setIsDark((prev) => {
       const next = !prev;
-      try { localStorage.setItem("medlens_theme", next ? "dark" : "light"); } catch {}
+      try { localStorage.setItem("medlens_theme", next ? "dark" : "light"); } catch { /* quota */ }
       return next;
     });
   }, []);
@@ -96,7 +96,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ── Onboarding ────────────────────────────────────────────────────────────
   const completeOnboarding = useCallback(() => {
     setHasOnboarded(true);
-    try { localStorage.setItem("medlens_onboarded", "1"); } catch {}
+    try { localStorage.setItem("medlens_onboarded", "1"); } catch { /* quota */ }
   }, []);
 
   // ── Drug search ───────────────────────────────────────────────────────────

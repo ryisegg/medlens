@@ -7,6 +7,7 @@ import { TabBar } from "./components/layout/TabBar";
 import { HomePage } from "./pages/HomePage";
 import { DrugSearchPage } from "./pages/DrugSearchPage";
 import { DrugDetailRoute } from "./pages/DrugDetailRoute";
+import { ApiDrugDetailRoute } from "./pages/ApiDrugDetailRoute";
 import { IdentifierPage } from "./pages/IdentifierPage";
 import { SymptomPage } from "./pages/SymptomPage";
 import { SafetyPage } from "./pages/SafetyPage";
@@ -53,6 +54,7 @@ function AppShell() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/drugs" element={<DrugSearchPage />} />
+          <Route path="/drugs/api/:name" element={<ApiDrugDetailRoute />} />
           <Route path="/drugs/:id" element={<DrugDetailRoute />} />
           <Route path="/identifier" element={<IdentifierPage />} />
           <Route path="/symptoms" element={<SymptomPage />} />

@@ -4,12 +4,20 @@ import { useApp } from "../context/AppContext";
 import { getTranslations } from "../i18n";
 import { SearchBar } from "../components/shared/SearchBar";
 import { DrugCard } from "../components/shared/DrugCard";
+import { Spinner } from "../components/shared/Spinner";
+import { useLiveSearch } from "../hooks/useLiveSearch";
 import type { DrugCategory, OtcRxFilter } from "../types";
 import { ALL_CATEGORIES } from "../data/drugs";
 
 const CATEGORY_EMOJIS: Record<DrugCategory | "All", string> = {
   All: "⊕", "Pain Relief": "💊", Allergy: "🌿", "Cold & Flu": "🤧",
   "Digestive Health": "🫁", Skin: "🧴", Sleep: "🌙", Vitamins: "⭐", "Chronic Conditions": "🏥",
+};
+
+const TTY_BADGE: Record<string, string> = {
+  SBD: "Brand", SBN: "Brand", BN: "Brand",
+  SCD: "Generic", GPCK: "Generic",
+  IN: "Ingredient", MIN: "Ingredient",
 };
 
 export function DrugSearchPage() {
@@ -21,6 +29,7 @@ export function DrugSearchPage() {
     filteredDrugs,
   } = useApp();
   const t = getTranslations(language);
+  const { results: liveResults, loading: liveLoading, error: liveError } = useLiveSearch(searchQuery);
 
   useEffect(() => {
     document.title = `${t.search.title} — ${t.appName}`;
@@ -92,35 +101,92 @@ export function DrugSearchPage() {
         </p>
       </div>
 
-      {/* Drug list */}
-      <div className="px-4 pb-4">
-        {filteredDrugs.length === 0 ? (
+      {/* Local drug list */}
+      <div className="px-4 pb-2">
+        {filteredDrugs.length === 0 && !searchQuery ? (
           <div className="mt-6 rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-[#1c1c1e]">
             <div className="text-4xl mb-3">🔍</div>
             <p className="font-semibold text-slate-700 dark:text-white">{t.search.noResults}</p>
             <p className="mt-1 text-sm text-slate-400 dark:text-[#636366]">{t.search.noResultsDesc}</p>
+          </div>
+        ) : filteredDrugs.length > 0 ? (
+          <>
             {searchQuery && (
-              <button
-                type="button"
-                onClick={() => setSearchQuery("")}
-                className="mt-4 rounded-full bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 dark:bg-blue-950/40 dark:text-[#0a84ff]"
-              >
-                {t.common.clear}
-              </button>
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
+                {t.search.localTitle}
+              </p>
             )}
-          </div>
-        ) : (
-          <div className="mt-1 space-y-3">
-            {filteredDrugs.map((drug) => (
-              <DrugCard
-                key={drug.id}
-                drug={drug}
-                onClick={() => navigate(`/drugs/${drug.id}`)}
-              />
-            ))}
-          </div>
-        )}
+            <div className="space-y-3">
+              {filteredDrugs.map((drug) => (
+                <DrugCard
+                  key={drug.id}
+                  drug={drug}
+                  onClick={() => navigate(`/drugs/${drug.id}`)}
+                />
+              ))}
+            </div>
+          </>
+        ) : null}
       </div>
+
+      {/* Live API results */}
+      {searchQuery.trim().length >= 2 && (
+        <div className="px-4 pb-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
+              {t.search.liveTitle}
+            </p>
+            {liveLoading && <Spinner size="sm" />}
+          </div>
+
+          {liveError && (
+            <p className="text-xs text-amber-700 dark:text-amber-400 mb-2">{t.api.searchError}</p>
+          )}
+
+          {!liveLoading && !liveError && liveResults.length === 0 && (
+            <p className="text-xs text-slate-400 dark:text-[#636366]">{t.api.noLiveResults}</p>
+          )}
+
+          {liveResults.length > 0 && (
+            <div className="space-y-2">
+              {liveResults.map((result) => (
+                <button
+                  key={result.rxcui}
+                  type="button"
+                  onClick={() => navigate(`/drugs/api/${encodeURIComponent(result.name)}`)}
+                  className="w-full rounded-2xl bg-white px-4 py-3.5 text-left shadow-sm transition active:scale-[0.98] dark:bg-[#1c1c1e]"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">{result.name}</p>
+                    <span className="flex-shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                      {TTY_BADGE[result.tty] ?? result.tty}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-xs text-slate-400 dark:text-[#636366]">FDA Database · {result.rxcui}</p>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* No results at all */}
+      {searchQuery && filteredDrugs.length === 0 && !liveLoading && liveResults.length === 0 && !liveError && (
+        <div className="px-4 pb-4">
+          <div className="rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-[#1c1c1e]">
+            <div className="text-4xl mb-3">🔍</div>
+            <p className="font-semibold text-slate-700 dark:text-white">{t.search.noResults}</p>
+            <p className="mt-1 text-sm text-slate-400 dark:text-[#636366]">{t.search.noResultsDesc}</p>
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="mt-4 rounded-full bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 dark:bg-blue-950/40 dark:text-[#0a84ff]"
+            >
+              {t.common.clear}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Pharmacist reminder */}
       <div className="px-4 pb-4">
