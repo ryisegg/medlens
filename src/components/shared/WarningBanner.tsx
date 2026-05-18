@@ -56,25 +56,23 @@ export function WarningBanner({ level, title, message, dismissible, onDismiss }:
   const [visible, setVisible] = useState(true);
   const s = STYLES[level];
 
-  const handleDismiss = () => {
-    if (onDismiss) {
-      onDismiss();
-    } else {
-      setVisible(false);
-    }
-  };
-
   if (!visible) return null;
 
+  const handleDismiss = () => {
+    if (onDismiss) onDismiss();
+    else setVisible(false);
+  };
+
   return (
-    <div className={`flex items-start gap-3 rounded-xl border-l-4 p-4 ${s.container}`} role="alert">
+    <div className={`flex items-start gap-3 rounded-2xl border-l-4 px-4 py-3.5 ${s.container}`} role="alert">
       <Icon level={level} className={`mt-0.5 h-5 w-5 flex-shrink-0 ${s.icon}`} />
       <div className="flex-1 min-w-0">
         <p className={`text-sm font-semibold ${s.title}`}>{title}</p>
-        <p className={`mt-0.5 text-sm ${s.message}`}>{message}</p>
+        <p className={`mt-0.5 text-xs leading-relaxed ${s.message}`}>{message}</p>
       </div>
       {dismissible && (
         <button
+          type="button"
           onClick={handleDismiss}
           className={`flex-shrink-0 text-lg leading-none ${s.icon} opacity-60 hover:opacity-100`}
           aria-label="Dismiss"

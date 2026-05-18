@@ -2,18 +2,15 @@
 
 @theme {
   --font-sans: "Inter", system-ui, sans-serif;
-
-  --color-brand:          #1d4ed8;
+  --color-brand:          #2563eb;
   --color-brand-light:    #3b82f6;
   --color-brand-subtle:   #eff6ff;
-
-  --color-surface:        #ffffff;
-  --color-surface-raised: #f8fafc;
-  --color-border:         #e2e8f0;
-  --color-text-primary:   #0f172a;
-  --color-text-secondary: #475569;
-  --color-muted:          #94a3b8;
-
+  --color-surface:        #f2f2f7;
+  --color-card:           #ffffff;
+  --color-border:         #e5e5ea;
+  --color-text-primary:   #1c1c1e;
+  --color-text-secondary: #6b6b6b;
+  --color-muted:          #aeaeb2;
   --color-emergency:      #dc2626;
   --color-emergency-bg:   #fef2f2;
   --color-caution:        #d97706;
@@ -23,19 +20,25 @@
 }
 
 @layer base {
-  html {
-    @apply antialiased scroll-smooth;
-  }
+  html { @apply antialiased; }
 
   body {
     margin: 0;
-    background: #ffffff;
-    color: #0f172a;
-    min-height: 100vh;
+    background: #f2f2f7;
+    color: #1c1c1e;
     font-family: "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    /* iOS safe area support */
+    padding-top: env(safe-area-inset-top);
   }
 
   :focus-visible {
     @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+  }
+
+  /* Smooth scrolling for page content */
+  .page-scroll {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }

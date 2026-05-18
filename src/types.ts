@@ -1,3 +1,7 @@
+import type { Language } from "./i18n";
+
+export type { Language };
+
 export type DrugCategory =
   | "Pain Relief"
   | "Allergy"
@@ -9,14 +13,8 @@ export type DrugCategory =
   | "Chronic Conditions";
 
 export type DosageForm =
-  | "tablet"
-  | "capsule"
-  | "liquid"
-  | "cream"
-  | "patch"
-  | "injection"
-  | "chewable"
-  | "softgel";
+  | "tablet" | "capsule" | "liquid" | "cream"
+  | "patch" | "injection" | "chewable" | "softgel";
 
 export type PregnancyCategory = "A" | "B" | "C" | "D" | "X" | "N";
 
@@ -50,6 +48,7 @@ export interface Drug {
   pregnancyNote: string;
   breastfeedingNote: string;
   whenToCallDoctor: string[];
+  emergencySigns?: string[];
   lastReviewed: string;
   source: string;
   otcOrRx: "OTC" | "Rx";
@@ -73,36 +72,19 @@ export interface SymptomMapping {
 }
 
 export type PillColor =
-  | "white"
-  | "off-white"
-  | "yellow"
-  | "orange"
-  | "pink"
-  | "red"
-  | "purple"
-  | "blue"
-  | "green"
-  | "brown"
-  | "gray"
-  | "black"
-  | "clear";
+  | "white" | "off-white" | "yellow" | "orange" | "pink" | "red"
+  | "purple" | "blue" | "green" | "brown" | "gray" | "black" | "clear";
 
 export type PillShape =
-  | "round"
-  | "oval"
-  | "oblong"
-  | "capsule"
-  | "square"
-  | "diamond"
-  | "pentagon"
-  | "hexagon"
-  | "triangle";
+  | "round" | "oval" | "oblong" | "capsule" | "square"
+  | "diamond" | "pentagon" | "hexagon" | "triangle";
 
 export interface PillIdentifierQuery {
   color: PillColor | "";
   shape: PillShape | "";
   imprint: string;
   strength: string;
+  scored: "yes" | "no" | "";
 }
 
 export interface PillIdentifierResult {
@@ -113,19 +95,37 @@ export interface PillIdentifierResult {
 
 export type WarningLevel = "emergency" | "caution" | "info";
 
+export type OtcRxFilter = "all" | "OTC" | "Rx";
+
 export interface AppContextValue {
+  // Language
+  language: Language;
+  setLanguage: (lang: Language) => void;
+
+  // Drug search
   searchQuery: string;
   setSearchQuery: (q: string) => void;
   activeCategory: DrugCategory | "All";
   setActiveCategory: (c: DrugCategory | "All") => void;
+  otcRxFilter: OtcRxFilter;
+  setOtcRxFilter: (f: OtcRxFilter) => void;
   filteredDrugs: Drug[];
-  mobileNavOpen: boolean;
-  setMobileNavOpen: (open: boolean) => void;
+
+  // Recently viewed
+  recentlyViewed: Drug[];
+  addToRecentlyViewed: (drug: Drug) => void;
+
+  // Symptom checker
   symptomInput: string;
   setSymptomInput: (s: string) => void;
+  selectedSymptoms: string[];
+  toggleSymptom: (symptom: string) => void;
+  clearSelectedSymptoms: () => void;
   detectedRedFlags: string[];
   symptomSuggestions: SymptomSuggestion[];
   runSymptomCheck: () => void;
+
+  // Pill identifier
   pillQuery: PillIdentifierQuery;
   setPillQuery: (q: PillIdentifierQuery) => void;
   identifierResults: PillIdentifierResult[];

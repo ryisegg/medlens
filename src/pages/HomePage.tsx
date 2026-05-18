@@ -1,180 +1,173 @@
 import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
-import { SearchBar } from "../components/shared/SearchBar";
+import { getTranslations } from "../i18n";
 import { DrugCard } from "../components/shared/DrugCard";
-import { drugs } from "../data/drugs";
 import type { DrugCategory } from "../types";
 
-const CATEGORY_ICONS: Record<DrugCategory, string> = {
-  "Pain Relief": "💊",
-  "Allergy": "🌿",
-  "Cold & Flu": "🤧",
-  "Digestive Health": "🫁",
-  "Skin": "🧴",
-  "Sleep": "🌙",
-  "Vitamins": "🌟",
-  "Chronic Conditions": "🏥",
-};
+const COMMON_SEARCHES = ["Ibuprofen", "Tylenol", "Benadryl", "Aspirin", "Metformin"];
 
-const CATEGORIES: DrugCategory[] = [
-  "Pain Relief", "Allergy", "Cold & Flu", "Digestive Health",
-  "Skin", "Sleep", "Vitamins", "Chronic Conditions",
+const QUICK_ACTIONS = [
+  { key: "searchDrug", to: "/drugs", icon: "💊", bg: "bg-blue-50", iconBg: "bg-blue-100" },
+  { key: "identifyPill", to: "/identifier", icon: "🔍", bg: "bg-green-50", iconBg: "bg-green-100" },
+  { key: "checkSymptoms", to: "/symptoms", icon: "🩺", bg: "bg-purple-50", iconBg: "bg-purple-100" },
+  { key: "safetyInfo", to: "/safety", icon: "🛡️", bg: "bg-orange-50", iconBg: "bg-orange-100" },
+] as const;
+
+const CATEGORIES: { cat: DrugCategory; icon: string }[] = [
+  { cat: "Pain Relief", icon: "💊" }, { cat: "Allergy", icon: "🌿" },
+  { cat: "Cold & Flu", icon: "🤧" }, { cat: "Digestive Health", icon: "🫁" },
+  { cat: "Skin", icon: "🧴" }, { cat: "Sleep", icon: "🌙" },
+  { cat: "Vitamins", icon: "⭐" }, { cat: "Chronic Conditions", icon: "🏥" },
 ];
-
-const FEATURED_IDS = ["ibuprofen", "loratadine", "omeprazole"];
 
 export function HomePage() {
   const navigate = useNavigate();
-  const { searchQuery, setSearchQuery, setActiveCategory } = useApp();
+  const { language, setSearchQuery, setActiveCategory, recentlyViewed } = useApp();
+  const t = getTranslations(language);
 
   useEffect(() => {
-    document.title = "MedLens — Medication Lookup";
-  }, []);
+    document.title = t.appName;
+  }, [t.appName]);
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      navigate("/drugs");
-    }
+  const handleCommonSearch = (term: string) => {
+    setSearchQuery(term);
+    navigate("/drugs");
   };
 
-  const handleCategoryClick = (cat: DrugCategory) => {
+  const handleCategory = (cat: DrugCategory) => {
     setActiveCategory(cat);
     navigate("/drugs");
   };
 
-  const featuredDrugs = FEATURED_IDS.map((id) => drugs.find((d) => d.id === id)).filter(Boolean) as typeof drugs;
-
   return (
-    <div>
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-blue-700 to-blue-900 px-4 py-14 text-white">
-        <div className="mx-auto max-w-2xl text-center">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Understand your medications
-          </h1>
-          <p className="mt-3 text-base text-blue-100">
-            Look up drugs, identify unknown pills, and get OTC guidance for common symptoms. Always in plain English.
-          </p>
-          <div className="mt-6">
-            <SearchBar
-              value={searchQuery}
-              onChange={setSearchQuery}
-              placeholder="Search by drug name, brand, or ingredient…"
-              onSubmit={handleSearch}
-              autoFocus={false}
-            />
-          </div>
-          <p className="mt-3 text-xs text-blue-300">
-            For informational purposes only — not a substitute for medical advice
-          </p>
+    <div className="space-y-4 px-4 py-4">
+      {/* Hero card */}
+      <div className="rounded-3xl bg-gradient-to-br from-blue-600 to-blue-800 p-6 text-white shadow-lg">
+        <div className="mb-1 text-xs font-semibold uppercase tracking-widest text-blue-200">
+          {t.appName}
+        </div>
+        <h1 className="text-xl font-bold leading-snug">{t.home.heroTitle}</h1>
+        <p className="mt-2 text-sm text-blue-100">{t.home.heroSubtitle}</p>
+        <button
+          type="button"
+          onClick={() => navigate("/drugs")}
+          className="mt-4 flex items-center gap-2 rounded-2xl bg-white/20 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/30"
+        >
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+          </svg>
+          {t.search.placeholder}
+        </button>
+      </div>
+
+      {/* Quick actions */}
+      <section>
+        <h2 className="mb-3 px-1 text-sm font-semibold text-slate-500 uppercase tracking-wide">{t.home.quickActions}</h2>
+        <div className="grid grid-cols-2 gap-3">
+          {QUICK_ACTIONS.map(({ key, to, icon, bg, iconBg }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => navigate(to)}
+              className={`flex items-center gap-3 rounded-2xl ${bg} p-4 text-left shadow-sm transition active:scale-95`}
+            >
+              <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${iconBg} text-xl`}>
+                {icon}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-slate-800">{t.home[key as keyof typeof t.home] as string}</p>
+                <p className="mt-0.5 text-xs text-slate-500">{t.home[`${key}Desc` as keyof typeof t.home] as string}</p>
+              </div>
+            </button>
+          ))}
         </div>
       </section>
 
-      {/* Quick links */}
-      <section className="border-b border-slate-100 bg-white px-4 py-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Link
-              to="/drugs"
-              className="flex items-start gap-4 rounded-2xl border border-slate-200 p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
+      {/* Common searches */}
+      <section>
+        <h2 className="mb-3 px-1 text-sm font-semibold text-slate-500 uppercase tracking-wide">{t.home.commonSearches}</h2>
+        <div className="flex flex-wrap gap-2">
+          {COMMON_SEARCHES.map((term) => (
+            <button
+              key={term}
+              type="button"
+              onClick={() => handleCommonSearch(term)}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700 active:scale-95"
             >
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-blue-100 text-xl">
-                💊
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900">Drug Dictionary</h3>
-                <p className="mt-0.5 text-sm text-slate-500">Search 20+ medications with full details</p>
-              </div>
-            </Link>
-            <Link
-              to="/identifier"
-              className="flex items-start gap-4 rounded-2xl border border-slate-200 p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
-            >
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-green-100 text-xl">
-                🔍
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900">Pill Identifier</h3>
-                <p className="mt-0.5 text-sm text-slate-500">Identify unknown pills by color, shape, imprint</p>
-              </div>
-            </Link>
-            <Link
-              to="/symptoms"
-              className="flex items-start gap-4 rounded-2xl border border-slate-200 p-5 shadow-sm transition hover:border-blue-300 hover:shadow-md"
-            >
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-purple-100 text-xl">
-                🩺
-              </div>
-              <div>
-                <h3 className="font-semibold text-slate-900">Symptom Checker</h3>
-                <p className="mt-0.5 text-sm text-slate-500">Get OTC suggestions for common symptoms</p>
-              </div>
-            </Link>
-          </div>
+              {term}
+            </button>
+          ))}
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="px-4 py-8">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Browse by category</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => handleCategoryClick(cat)}
-                className="flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white p-4 text-center shadow-sm transition hover:border-blue-300 hover:shadow-md"
-              >
-                <span className="text-2xl">{CATEGORY_ICONS[cat]}</span>
-                <span className="text-xs font-medium text-slate-700">{cat}</span>
-              </button>
+      {/* Recently viewed */}
+      <section>
+        <div className="mb-3 flex items-center justify-between px-1">
+          <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wide">{t.home.recentlyViewed}</h2>
+          {recentlyViewed.length > 0 && (
+            <button type="button" onClick={() => navigate("/drugs")} className="text-xs font-medium text-blue-600">
+              {t.home.viewAll}
+            </button>
+          )}
+        </div>
+        {recentlyViewed.length === 0 ? (
+          <div className="rounded-2xl bg-white p-5 text-center text-sm text-slate-400 shadow-sm">
+            {t.home.noRecent}
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {recentlyViewed.slice(0, 3).map((drug) => (
+              <DrugCard key={drug.id} drug={drug} onClick={() => navigate(`/drugs/${drug.id}`)} />
             ))}
           </div>
+        )}
+      </section>
+
+      {/* Browse by category */}
+      <section>
+        <h2 className="mb-3 px-1 text-sm font-semibold text-slate-500 uppercase tracking-wide">
+          {language === "en" ? "Browse by Category" : "按类别浏览"}
+        </h2>
+        <div className="grid grid-cols-4 gap-2">
+          {CATEGORIES.map(({ cat, icon }) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => handleCategory(cat)}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white p-3 shadow-sm transition active:scale-95"
+            >
+              <span className="text-2xl">{icon}</span>
+              <span className="text-center text-[10px] font-medium leading-tight text-slate-600">
+                {language === "en" ? cat : translateCategory(cat)}
+              </span>
+            </button>
+          ))}
         </div>
       </section>
 
-      {/* Featured drugs */}
-      <section className="border-t border-slate-100 bg-slate-50 px-4 py-8">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">Common medications</h2>
-            <Link to="/drugs" className="text-sm font-medium text-blue-600 hover:text-blue-800">
-              View all →
-            </Link>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {featuredDrugs.map((drug) => (
-              <DrugCard
-                key={drug.id}
-                drug={drug}
-                onClick={() => navigate(`/drugs/${drug.id}`)}
-              />
-            ))}
+      {/* Emergency banner */}
+      <div className="rounded-2xl border-2 border-red-200 bg-red-50 p-4 shadow-sm">
+        <div className="flex items-start gap-3">
+          <span className="text-xl">🚨</span>
+          <div>
+            <p className="text-sm font-bold text-red-800">{t.home.emergency}</p>
+            <p className="mt-1 text-xs text-red-700">{t.home.emergencyDesc}</p>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Safety banner */}
-      <section className="px-4 py-6">
-        <div className="mx-auto max-w-4xl">
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">🚨</span>
-              <div>
-                <p className="font-semibold text-red-800">Having a medical emergency?</p>
-                <p className="mt-1 text-sm text-red-700">
-                  If you have chest pain, difficulty breathing, stroke symptoms, or another emergency — <strong>call 911 immediately</strong>. Do not use this app for emergencies.
-                </p>
-                <Link to="/safety" className="mt-2 inline-block text-sm font-medium text-red-700 underline hover:text-red-900">
-                  View emergency resources
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Bottom spacer for breathing room */}
+      <div className="h-2" />
     </div>
   );
+}
+
+function translateCategory(cat: string): string {
+  const map: Record<string, string> = {
+    "Pain Relief": "止痛", "Allergy": "抗过敏", "Cold & Flu": "感冒流感",
+    "Digestive Health": "消化", "Skin": "皮肤", "Sleep": "睡眠",
+    "Vitamins": "维生素", "Chronic Conditions": "慢性病",
+  };
+  return map[cat] ?? cat;
 }

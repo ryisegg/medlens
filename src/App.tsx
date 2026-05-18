@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
-import { NavBar } from "./components/layout/NavBar";
-import { DisclaimerFooter } from "./components/layout/DisclaimerFooter";
+import { TopBar } from "./components/layout/TopBar";
+import { TabBar } from "./components/layout/TabBar";
 import { HomePage } from "./pages/HomePage";
 import { DrugSearchPage } from "./pages/DrugSearchPage";
 import { DrugDetailRoute } from "./pages/DrugDetailRoute";
@@ -12,19 +12,30 @@ import { SafetyPage } from "./pages/SafetyPage";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [pathname]);
+  useEffect(() => { window.scrollTo(0, 0); }, [pathname]);
   return null;
+}
+
+function NotFound() {
+  return (
+    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-4 text-center">
+      <div className="text-6xl font-bold text-slate-200">404</div>
+      <h1 className="text-2xl font-semibold text-slate-800">Page not found</h1>
+      <a href="/" className="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white">
+        Go home
+      </a>
+    </div>
+  );
 }
 
 function App() {
   return (
     <AppProvider>
-      <div className="flex min-h-screen flex-col bg-white">
+      <div className="min-h-screen bg-slate-100">
         <ScrollToTop />
-        <NavBar />
-        <main className="flex-1">
+        <TopBar />
+        {/* pt-12 = TopBar height, pb-20 = TabBar height + safe area */}
+        <main className="pt-12 pb-20">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/drugs" element={<DrugSearchPage />} />
@@ -32,24 +43,10 @@ function App() {
             <Route path="/identifier" element={<IdentifierPage />} />
             <Route path="/symptoms" element={<SymptomPage />} />
             <Route path="/safety" element={<SafetyPage />} />
-            <Route
-              path="*"
-              element={
-                <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 px-4 text-center">
-                  <div className="text-6xl font-bold text-slate-200">404</div>
-                  <h1 className="text-2xl font-semibold text-slate-800">Page not found</h1>
-                  <p className="text-slate-500">
-                    The page you're looking for doesn't exist.
-                  </p>
-                  <a href="/" className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
-                    Go home
-                  </a>
-                </div>
-              }
-            />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
-        <DisclaimerFooter />
+        <TabBar />
       </div>
     </AppProvider>
   );

@@ -1,15 +1,35 @@
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
+import { getTranslations } from "../../i18n";
 import { WarningBanner } from "../shared/WarningBanner";
 import { getMatchedRedFlagGroups } from "../../data/symptoms";
 import { getDrugById } from "../../data/drugs";
 import type { SymptomSuggestion } from "../../types";
+import type { Translations } from "../../i18n";
 
-function SymptomSuggestionCard({ suggestion }: { suggestion: SymptomSuggestion }) {
+const CHIPS = [
+  "fever", "headache", "cough", "allergy", "stomachPain",
+  "diarrhea", "soreThroat", "insomnia", "nausea", "rash",
+  "runnyNose", "bodyAche",
+] as const;
+
+const CHIP_ICONS: Record<string, string> = {
+  fever: "🌡️", headache: "🤕", cough: "😮‍💨", allergy: "🤧",
+  stomachPain: "🫁", diarrhea: "💧", soreThroat: "🗣️", insomnia: "😴",
+  nausea: "🤢", rash: "🧴", runnyNose: "💨", bodyAche: "💪",
+};
+
+interface SuggestionCardProps {
+  suggestion: SymptomSuggestion;
+  t: Translations;
+}
+
+function SymptomSuggestionCard({ suggestion, t }: SuggestionCardProps) {
   const navigate = useNavigate();
+  const ts = t.symptoms;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-2xl bg-white px-5 py-4 shadow-sm">
       <h3 className="text-base font-semibold text-slate-900">{suggestion.categoryName}</h3>
 
       {suggestion.exampleDrugs.length > 0 && (
@@ -21,7 +41,7 @@ function SymptomSuggestionCard({ suggestion }: { suggestion: SymptomSuggestion }
                 key={id}
                 type="button"
                 onClick={() => navigate(`/drugs/${id}`)}
-                className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
+                className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700"
               >
                 {drug.name}
               </button>
@@ -32,22 +52,19 @@ function SymptomSuggestionCard({ suggestion }: { suggestion: SymptomSuggestion }
 
       <div className="mt-4 space-y-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Why it may help</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{ts.whyItHelps}</p>
           <p className="mt-1 text-sm text-slate-700">{suggestion.whyItHelps}</p>
         </div>
-
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">Who should avoid it</p>
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-600">{ts.whoShouldAvoid}</p>
           <p className="mt-1 text-sm text-amber-800">{suggestion.whoShouldAvoid}</p>
         </div>
-
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Key risks</p>
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{ts.keyRisks}</p>
           <p className="mt-1 text-sm text-slate-700">{suggestion.keyRisks}</p>
         </div>
-
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-red-600">When to seek medical care</p>
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-wide text-red-600">{ts.whenToSeekCare}</p>
           <p className="mt-1 text-sm text-red-800">{suggestion.whenToSeekCare}</p>
         </div>
       </div>
@@ -56,80 +73,103 @@ function SymptomSuggestionCard({ suggestion }: { suggestion: SymptomSuggestion }
 }
 
 export function SymptomChecker() {
-  const { symptomInput, setSymptomInput, detectedRedFlags, symptomSuggestions, runSymptomCheck } = useApp();
+  const {
+    language, symptomInput, setSymptomInput,
+    selectedSymptoms, toggleSymptom, clearSelectedSymptoms,
+    detectedRedFlags, symptomSuggestions, runSymptomCheck,
+  } = useApp();
+  const t = getTranslations(language);
   const redFlagGroups = getMatchedRedFlagGroups(detectedRedFlags);
-  const hasResults = symptomSuggestions.length > 0 || detectedRedFlags.length > 0;
+  const hasInput = selectedSymptoms.length > 0 || symptomInput.trim().length > 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 px-4 py-4">
       <WarningBanner
         level="info"
-        title="This tool does not diagnose illness"
-        message="MedLens only provides general OTC medication guidance. This is not a substitute for professional medical advice. Always consult a doctor or pharmacist before taking any medication."
+        title={t.symptoms.disclaimer}
+        message={t.symptoms.disclaimerDesc}
       />
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-        <label htmlFor="symptom-input" className="mb-2 block text-sm font-medium text-slate-700">
-          Describe your symptoms
-        </label>
+      {/* Chip selection + free text */}
+      <div className="rounded-2xl bg-white px-5 py-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between">
+          <p className="text-sm font-semibold text-slate-800">{t.symptoms.selectSymptoms}</p>
+          {(selectedSymptoms.length > 0 || symptomInput) && (
+            <button type="button" onClick={clearSelectedSymptoms} className="text-xs font-medium text-slate-400">
+              {t.symptoms.clearButton}
+            </button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {CHIPS.map((chip) => {
+            const isSelected = selectedSymptoms.includes(chip);
+            return (
+              <button
+                key={chip}
+                type="button"
+                onClick={() => toggleSymptom(chip)}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                  isSelected ? "bg-blue-600 text-white shadow-sm" : "bg-slate-100 text-slate-600"
+                }`}
+              >
+                <span>{CHIP_ICONS[chip]}</span>
+                <span>{t.symptoms.chips[chip]}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <p className="mt-4 mb-2 text-xs text-slate-400 font-medium">{t.symptoms.orType}</p>
         <textarea
-          id="symptom-input"
-          rows={4}
+          rows={3}
           value={symptomInput}
           onChange={(e) => setSymptomInput(e.target.value)}
-          placeholder="e.g. headache, fever, runny nose, stomach ache…"
-          className="w-full resize-none rounded-xl border border-slate-200 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          placeholder={t.symptoms.noSelection}
+          className="w-full resize-none rounded-xl border border-slate-200 px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
         />
 
         <button
           type="button"
           onClick={runSymptomCheck}
-          disabled={!symptomInput.trim()}
-          className="mt-3 w-full rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={!hasInput}
+          className="mt-3 w-full rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white transition disabled:opacity-40"
         >
-          Check Symptoms
+          {t.symptoms.checkButton}
         </button>
       </div>
 
-      {/* Emergency red-flag warnings — shown immediately on input match */}
+      {/* Emergency red-flag banners */}
       {redFlagGroups.length > 0 && (
         <div className="space-y-3">
           {redFlagGroups.map((group, i) => (
             <div key={i} className="rounded-2xl border-2 border-red-500 bg-red-50 p-5">
-              <div className="flex items-center gap-2 text-red-800">
+              <div className="flex items-center gap-2 text-red-800 mb-2">
                 <svg className="h-6 w-6 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
-                <span className="text-base font-bold">Seek Emergency Help</span>
+                <span className="text-base font-bold">{t.warnings.emergency}</span>
               </div>
-              <p className="mt-2 text-sm text-red-800">{group.emergencyLine}</p>
-              <div className="mt-3 rounded-lg bg-red-600 px-4 py-3 text-center">
+              <p className="text-sm text-red-800">{group.emergencyLine}</p>
+              <div className="mt-3 rounded-xl bg-red-600 px-4 py-3 text-center">
                 <p className="text-base font-bold text-white">{group.callAction}</p>
               </div>
             </div>
           ))}
-          <p className="text-sm text-slate-500 text-center">
-            Do not attempt to self-treat emergency symptoms. Please seek immediate medical care.
+          <p className="text-center text-xs text-slate-500">
+            Do not attempt to self-treat emergency symptoms.
           </p>
         </div>
       )}
 
-      {/* Symptom suggestions — only when no red flags */}
+      {/* Drug suggestions */}
       {detectedRedFlags.length === 0 && symptomSuggestions.length > 0 && (
-        <div className="space-y-4">
-          <p className="text-sm font-medium text-slate-700">
-            Based on your symptoms, here are some OTC options to consider:
-          </p>
+        <div className="space-y-3">
+          <p className="px-1 text-sm font-semibold text-slate-700">{t.symptoms.results}</p>
           {symptomSuggestions.map((s, i) => (
-            <SymptomSuggestionCard key={i} suggestion={s} />
+            <SymptomSuggestionCard key={i} suggestion={s} t={t} />
           ))}
         </div>
-      )}
-
-      {hasResults === false && symptomInput.trim() && (
-        <p className="text-center text-sm text-slate-500">
-          Click "Check Symptoms" to see suggestions for your symptoms.
-        </p>
       )}
     </div>
   );

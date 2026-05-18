@@ -362,7 +362,56 @@ export const SYMPTOM_MAPPINGS: SymptomMapping[] = [
       },
     ],
   },
+  {
+    symptomKeywords: ["sore throat", "throat pain", "throat ache", "pharyngitis"],
+    suggestions: [
+      {
+        categoryName: "Pain Relievers for Throat",
+        exampleDrugs: ["acetaminophen", "ibuprofen"],
+        whyItHelps:
+          "Acetaminophen and ibuprofen reduce throat inflammation and pain. OTC throat lozenges (benzocaine-based) can numb locally.",
+        whoShouldAvoid:
+          "NSAIDs should be avoided by those with stomach ulcers or kidney disease. Do not give aspirin to children.",
+        keyRisks:
+          "Sore throat may be strep (bacterial) — if no improvement in 3 days or fever develops, see a doctor.",
+        whenToSeekCare:
+          "Severe throat pain with difficulty swallowing, high fever, drooling, or visible white patches — may require antibiotics or urgent care.",
+      },
+    ],
+  },
+  {
+    symptomKeywords: ["body ache", "muscle ache", "muscle pain", "ache", "flu ache", "myalgia"],
+    suggestions: [
+      {
+        categoryName: "NSAIDs / Pain Relievers",
+        exampleDrugs: ["ibuprofen", "aspirin"],
+        whyItHelps:
+          "NSAIDs reduce inflammation causing muscle aches, especially common in flu and viral illness.",
+        whoShouldAvoid:
+          "People with stomach ulcers, kidney disease, or on blood thinners. Aspirin not for children.",
+        keyRisks:
+          "Take with food to reduce stomach upset. Do not use more than 10 days without medical consultation.",
+        whenToSeekCare:
+          "Severe muscle pain with dark urine, weakness, or swelling — could indicate rhabdomyolysis. Seek emergency care.",
+      },
+    ],
+  },
 ];
+
+export const CHIP_SYMPTOM_KEYWORDS: Record<string, string[]> = {
+  fever: ["fever"],
+  headache: ["headache"],
+  cough: ["cough"],
+  allergy: ["allergy"],
+  stomachPain: ["stomach pain", "heartburn"],
+  diarrhea: ["diarrhea"],
+  soreThroat: ["sore throat"],
+  insomnia: ["trouble sleeping"],
+  nausea: ["nausea"],
+  rash: ["itchy skin", "rash"],
+  runnyNose: ["runny nose"],
+  bodyAche: ["body ache"],
+};
 
 export function detectRedFlags(input: string): string[] {
   const lower = input.toLowerCase();
