@@ -26,6 +26,7 @@ export const en = {
     warning: "Always verify with a pharmacist or doctor.",
     localTitle: "Common Medications",
     liveTitle: "Search FDA Database",
+    liveTip: "Type in the search box to find 500+ medications from the FDA database.",
   },
   drug: {
     overview: "Overview", uses: "What it's used for", mechanism: "How it works",
@@ -58,6 +59,8 @@ export const en = {
     noLiveResults: "No live results found",
     searchError: "Could not reach the drug database. Showing local results.",
     loadingLive: "Searching FDA database…",
+    dosageAndAdmin: "Dosage & administration",
+    warnings: "Warnings",
     ttyLabels: {
       SBD: "Brand", SBN: "Brand", BN: "Brand",
       SCD: "Generic", GPCK: "Generic",

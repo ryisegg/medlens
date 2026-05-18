@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { searchRxNorm } from "../services/rxnormApi";
 import type { ApiSearchResult } from "../types/api";
-import { searchDrugsLive } from "../services/drugSearch";
 
 export interface UseLiveSearchResult {
   results: ApiSearchResult[];
@@ -8,40 +9,28 @@ export interface UseLiveSearchResult {
   error: string | null;
 }
 
-interface SearchState {
-  results: ApiSearchResult[];
-  loading: boolean;
-  error: string | null;
-}
-
-const IDLE: SearchState = { results: [], loading: false, error: null };
-
-export function useLiveSearch(query: string, debounceMs = 500): UseLiveSearchResult {
-  const [state, setState] = useState<SearchState>(IDLE);
-  const abortRef = useRef<AbortController | null>(null);
-  const trimmed = query.trim();
+export function useLiveSearch(query: string): UseLiveSearchResult {
+  const [debouncedQuery, setDebouncedQuery] = useState(query);
 
   useEffect(() => {
-    if (trimmed.length < 2) return;
+    const t = setTimeout(() => setDebouncedQuery(query), 400);
+    return () => clearTimeout(t);
+  }, [query]);
 
-    const timer = setTimeout(async () => {
-      abortRef.current?.abort();
-      abortRef.current = new AbortController();
-      setState({ results: [], loading: true, error: null });
-      try {
-        const data = await searchDrugsLive(trimmed);
-        setState({ results: data, loading: false, error: null });
-      } catch (err) {
-        if ((err as Error).name !== "AbortError") {
-          setState({ results: [], loading: false, error: "Search failed. Please try again." });
-        }
-      }
-    }, debounceMs);
+  const trimmed = debouncedQuery.trim();
 
-    return () => { clearTimeout(timer); };
-  }, [trimmed, debounceMs]);
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["drugSearch", trimmed],
+    queryFn: () => searchRxNorm(trimmed),
+    enabled: trimmed.length >= 2,
+    staleTime: 6 * 60 * 60 * 1000,
+  });
 
-  // Return IDLE directly when query is too short — avoids stale state from prior searches
-  if (trimmed.length < 2) return IDLE;
-  return state;
+  if (trimmed.length < 2) return { results: [], loading: false, error: null };
+
+  return {
+    results: data ?? [],
+    loading: isPending,
+    error: isError ? "Search failed. Please try again." : null,
+  };
 }

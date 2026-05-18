@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import type { ApiDrugDetail } from "../types/api";
+import { useQuery } from "@tanstack/react-query";
 import { fetchDrugDetail } from "../services/drugSearch";
+import type { ApiDrugDetail } from "../types/api";
 
 export interface UseApiDrugResult {
   drug: ApiDrugDetail | null;
@@ -8,35 +8,22 @@ export interface UseApiDrugResult {
   error: string | null;
 }
 
-interface DrugState {
-  drug: ApiDrugDetail | null;
-  loading: boolean;
-  error: string | null;
-  fetchedFor: string;
-}
-
 export function useApiDrug(name: string): UseApiDrugResult {
-  const [state, setState] = useState<DrugState>({
-    drug: null, loading: false, error: null, fetchedFor: "",
+  const { data, isPending, isError } = useQuery({
+    queryKey: ["drugDetail", name],
+    queryFn: async () => {
+      const detail = await fetchDrugDetail(name);
+      if (!detail) throw new Error("No verified medication information found.");
+      return detail;
+    },
+    enabled: !!name,
+    staleTime: 24 * 60 * 60 * 1000,
+    retry: false,
   });
 
-  useEffect(() => {
-    if (!name) return;
-
-    fetchDrugDetail(name)
-      .then((detail) => {
-        if (!detail) {
-          setState({ drug: null, loading: false, error: "No verified medication information found.", fetchedFor: name });
-        } else {
-          setState({ drug: detail, loading: false, error: null, fetchedFor: name });
-        }
-      })
-      .catch(() => {
-        setState({ drug: null, loading: false, error: "Failed to load medication data. Please try again.", fetchedFor: name });
-      });
-  }, [name]);
-
-  // While a new name is being fetched, show loading state
-  if (state.fetchedFor !== name) return { drug: null, loading: true, error: null };
-  return state;
+  return {
+    drug: data ?? null,
+    loading: isPending,
+    error: isError ? "No verified medication information found for this drug." : null,
+  };
 }

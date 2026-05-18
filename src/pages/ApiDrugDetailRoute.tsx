@@ -4,7 +4,7 @@ import { useApp } from "../context/AppContext";
 import { getTranslations } from "../i18n";
 import { useApiDrug } from "../hooks/useApiDrug";
 import { ApiDrugDetailView } from "../components/drugs/ApiDrugDetail";
-import { Spinner } from "../components/shared/Spinner";
+import { DrugDetailSkeleton } from "../components/shared/DrugCardSkeleton";
 
 export function ApiDrugDetailRoute() {
   const { name } = useParams<{ name: string }>();
@@ -24,12 +24,7 @@ export function ApiDrugDetailRoute() {
   }, [drug, loading, t.appName, t.api.notFound]);
 
   if (loading) {
-    return (
-      <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
-        <Spinner size="lg" />
-        <p className="text-sm text-slate-500 dark:text-[#8e8e93]">{t.api.loading}</p>
-      </div>
-    );
+    return <DrugDetailSkeleton />;
   }
 
   if (error || !drug) {

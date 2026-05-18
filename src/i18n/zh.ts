@@ -28,6 +28,7 @@ export const zh: Translations = {
     warning: "服药前请务必咨询药剂师或医生。",
     localTitle: "常用药品",
     liveTitle: "搜索 FDA 数据库",
+    liveTip: "在搜索框中输入药名，可查询 FDA 数据库中 500 余种药品。",
   },
   drug: {
     overview: "概览", uses: "适应症", mechanism: "作用原理",
@@ -60,6 +61,8 @@ export const zh: Translations = {
     noLiveResults: "未找到实时结果",
     searchError: "无法连接药品数据库，仅显示本地结果。",
     loadingLive: "正在搜索 FDA 数据库…",
+    dosageAndAdmin: "用法与用量",
+    warnings: "注意事项",
     ttyLabels: {
       SBD: "品牌药", SBN: "品牌药", BN: "品牌药",
       SCD: "通用药", GPCK: "通用药",

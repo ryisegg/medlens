@@ -89,6 +89,32 @@ export async function fetchOpenFdaByName(name: string): Promise<ApiDrugDetail | 
   return null;
 }
 
+export async function fetchOpenFdaByImprint(imprint: string): Promise<ApiDrugDetail[]> {
+  const q = imprint.trim().toUpperCase();
+  if (!q) return [];
+
+  const cacheKey = `openfda_imprint_${q}`;
+  const cached = cacheGet<ApiDrugDetail[]>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    // Search within the full-text of SPL labels for the imprint
+    const search = `(openfda.brand_name:"${q}" OR openfda.generic_name:"${q}" OR openfda.substance_name:"${q}")`;
+    const url = `${BASE}?search=${encodeURIComponent(search)}&limit=5`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+
+    const json = await res.json();
+    const results: Record<string, unknown>[] = json.results ?? [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const details = results.map((r) => parseLabel(r as Record<string, any>, q));
+    cacheSet(cacheKey, details, 12 * 60 * 60 * 1000);
+    return details;
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchOpenFdaByRxcui(rxcui: string, fallbackName: string): Promise<ApiDrugDetail | null> {
   const cacheKey = `openfda_rxcui_${rxcui}`;
   const cached = cacheGet<ApiDrugDetail>(cacheKey);

@@ -54,6 +54,33 @@ export async function searchRxNorm(query: string): Promise<ApiSearchResult[]> {
   return deduped;
 }
 
+interface SpellingSuggestionResponse {
+  suggestionGroup?: {
+    suggestionList?: { suggestion?: string[] };
+  };
+}
+
+export async function getSpellingSuggestions(query: string): Promise<string[]> {
+  const q = query.trim();
+  if (!q || q.length < 3) return [];
+
+  const cacheKey = `rxnorm_spell_${q.toLowerCase()}`;
+  const cached = cacheGet<string[]>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const url = `${BASE}/spellingsuggestions.json?name=${encodeURIComponent(q)}`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const json: SpellingSuggestionResponse = await res.json();
+    const suggestions = json.suggestionGroup?.suggestionList?.suggestion ?? [];
+    cacheSet(cacheKey, suggestions, 60 * 60 * 1000); // 1-hour cache
+    return suggestions.slice(0, 4);
+  } catch {
+    return [];
+  }
+}
+
 export async function getRxNormInfo(rxcui: string): Promise<RxNormHit | null> {
   const cacheKey = `rxnorm_info_${rxcui}`;
   const cached = cacheGet<RxNormHit>(cacheKey);
