@@ -1,73 +1,65 @@
-# React + TypeScript + Vite
+# MedLens
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+MedLens is a medication lookup and safety companion for helping people understand what a medicine is used for, what risks to watch for, and when to seek professional care.
 
-Currently, two official plugins are available:
+## What It Does
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Search medications by brand name, generic name, ingredient, or imprint
+- View medication uses, side effects, contraindications, interactions, pregnancy/lactation notes, and emergency warning signs
+- Identify pills from color, shape, imprint, and strength clues
+- Check common symptom categories and see safer OTC direction with red-flag escalation
+- Save favorites, recently viewed medications, dark mode, language preference, and simple medication reminders locally
+- Pull live search/detail data from RxNorm, openFDA, and DailyMed where available
 
-## React Compiler
+## Safety Position
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+MedLens is an educational medication-information tool. It does not diagnose conditions, prescribe treatment, replace a clinician or pharmacist, or guarantee that a medication is appropriate for a specific person.
 
-## Expanding the ESLint configuration
+For emergencies such as chest pain, trouble breathing, stroke symptoms, severe allergic reaction, overdose, poisoning, or self-harm risk, users should call emergency services or Poison Control instead of using the app for self-treatment.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Data Sources
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+The app combines curated demo medication records with live public data sources:
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- RxNorm for normalized medication names and RxCUIs
+- openFDA drug labeling for FDA label fields
+- DailyMed for official structured product labeling from the National Library of Medicine
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Curated records should be treated as seed data and reviewed before production use. Legacy pregnancy letter categories are not used as primary safety guidance because FDA labeling has moved to narrative pregnancy and lactation risk information.
+
+## Tech Stack
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Router
+- React Query
+- Capacitor for iOS packaging
+
+## Local Development
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Build
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run build
 ```
+
+For GitHub Pages:
+
+```bash
+npm run build:github
+```
+
+## Roadmap
+
+- Add age, pregnancy/lactation, chronic-condition, and current-medication triage before symptom suggestions
+- Add stronger drug-interaction checks and duplicate-active-ingredient warnings
+- Add source citations at the field level for live drug-label content
+- Add accessibility and mobile viewport regression tests
+- Add production review workflow for curated medication records
