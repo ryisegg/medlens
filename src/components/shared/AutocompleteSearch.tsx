@@ -49,7 +49,7 @@ function hitBadge(h: Hit): { text: string; color: string } {
         : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
     };
   }
-  return { text: "FDA", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" };
+  return { text: "RxNorm", color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" };
 }
 
 export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, className = "" }: Props) {
@@ -276,7 +276,7 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
 
           {liveLoading && hits.length > 0 && (
             <div className="border-t border-slate-100 px-4 py-2 dark:border-[#2c2c2e]">
-              <p className="text-xs text-slate-400 dark:text-[#636366]">Loading more from FDA database…</p>
+              <p className="text-xs text-slate-400 dark:text-[#636366]">Loading more from RxNorm…</p>
             </div>
           )}
         </div>
