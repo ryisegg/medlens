@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { searchRxNorm, getSpellingSuggestions } from "../../services/rxnormApi";
 import { searchDrugs } from "../../data/drugs";
 import { useApp } from "../../context/AppContext";
+import { translateDrugNameOnly } from "../../utils/medicalTranslation";
 import { DropdownSkeleton } from "./DrugCardSkeleton";
 import type { ApiSearchResult } from "../../types/api";
 import type { Drug } from "../../types";
@@ -38,8 +39,15 @@ function hitPath(h: Hit): string {
     : `/drugs/api/${encodeURIComponent(h.result.rxcui)}`;
 }
 
-function hitLabel(h: Hit): string {
-  return h.kind === "local" ? h.drug.name : h.result.name;
+function hitLabel(h: Hit, isZh: boolean): string {
+  if (h.kind === "local") {
+    if (isZh) {
+      const zh = translateDrugNameOnly(h.drug.name);
+      return zh !== h.drug.name ? zh : h.drug.name;
+    }
+    return h.drug.name;
+  }
+  return h.result.name;
 }
 
 function hitSub(h: Hit, isZh: boolean): string {
@@ -244,7 +252,7 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
                   💊
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{hitLabel(hit)}</p>
+                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{hitLabel(hit, isZh)}</p>
                   <p className="truncate text-xs text-slate-400 dark:text-[#636366]">{hitSub(hit, isZh)}</p>
                 </div>
                 <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${badge.color}`}>

@@ -10,6 +10,17 @@ import type { DrugCategory, OtcRxFilter } from "../types";
 import { ALL_CATEGORIES } from "../data/drugs";
 import { searchRxNorm } from "../services/rxnormApi";
 
+const CATEGORY_ZH_SHORT: Record<DrugCategory, string> = {
+  "Pain Relief": "止痛",
+  "Allergy": "抗过敏",
+  "Cold & Flu": "感冒流感",
+  "Digestive Health": "消化",
+  "Skin": "皮肤",
+  "Sleep": "睡眠",
+  "Vitamins": "维生素",
+  "Chronic Conditions": "慢性病",
+};
+
 const CATEGORY_EMOJIS: Record<DrugCategory | "All", string> = {
   All: "⊕", "Pain Relief": "💊", Allergy: "🌿", "Cold & Flu": "🤧",
   "Digestive Health": "🫁", Skin: "🧴", Sleep: "🌙", Vitamins: "⭐", "Chronic Conditions": "🏥",
@@ -108,7 +119,7 @@ export function DrugSearchPage() {
                 }`}
               >
                 <span>{CATEGORY_EMOJIS[cat]}</span>
-                <span>{cat}</span>
+                <span>{language === "zh" ? CATEGORY_ZH_SHORT[cat] : cat}</span>
               </button>
             ))}
           </div>

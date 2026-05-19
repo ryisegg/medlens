@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { Drug, DrugCategory } from "../../types";
 import { useApp } from "../../context/AppContext";
+import { translateDrugNameOnly } from "../../utils/medicalTranslation";
 
 interface DrugCardProps {
   drug: Drug;
@@ -18,6 +19,17 @@ const CATEGORY_COLORS: Record<DrugCategory, string> = {
   "Chronic Conditions":  "bg-slate-100 text-slate-700 dark:bg-slate-700/30 dark:text-slate-300",
 };
 
+const CATEGORY_ZH: Record<DrugCategory, string> = {
+  "Pain Relief":        "止痛",
+  "Allergy":            "抗过敏",
+  "Cold & Flu":         "感冒流感",
+  "Digestive Health":   "消化",
+  "Skin":               "皮肤",
+  "Sleep":              "睡眠",
+  "Vitamins":           "维生素",
+  "Chronic Conditions": "慢性病",
+};
+
 function HeartIcon({ filled }: { filled: boolean }) {
   return filled ? (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -32,9 +44,19 @@ function HeartIcon({ filled }: { filled: boolean }) {
 
 export function DrugCard({ drug, onClick }: DrugCardProps) {
   const navigate = useNavigate();
-  const { favorites, toggleFavorite } = useApp();
+  const { favorites, toggleFavorite, language } = useApp();
   const isFav = favorites.includes(drug.id);
+  const isZh = language === "zh";
   const handleClick = onClick ?? (() => navigate(`/drugs/${drug.id}`));
+
+  const zhName = translateDrugNameOnly(drug.name);
+  const hasZhName = zhName !== drug.name;
+
+  const categoryLabel = isZh ? CATEGORY_ZH[drug.category] : drug.category;
+  const otcLabel = isZh
+    ? drug.otcOrRx === "OTC" ? "非处方" : "处方药"
+    : drug.otcOrRx;
+  const brandLabel = isZh ? "商品名" : "Also";
 
   return (
     <div className="relative">
@@ -45,26 +67,35 @@ export function DrugCard({ drug, onClick }: DrugCardProps) {
       >
         <div className="flex flex-wrap gap-1.5 mb-2">
           <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${CATEGORY_COLORS[drug.category]}`}>
-            {drug.category}
+            {categoryLabel}
           </span>
           <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
             drug.otcOrRx === "OTC"
               ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
               : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
           }`}>
-            {drug.otcOrRx}
+            {otcLabel}
           </span>
         </div>
-        <h3 className="text-base font-semibold text-slate-900 dark:text-white">{drug.name}</h3>
+
+        {/* Drug name — Chinese name shown prominently when available */}
+        {isZh && hasZhName ? (
+          <>
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white">{zhName}</h3>
+            <p className="text-xs text-slate-400 dark:text-[#636366]">{drug.name}</p>
+          </>
+        ) : (
+          <h3 className="text-base font-semibold text-slate-900 dark:text-white">{drug.name}</h3>
+        )}
+
         <p className="mt-0.5 text-sm text-slate-500 line-clamp-2 dark:text-[#8e8e93]">{drug.description}</p>
         {drug.brandNames.length > 0 && (
           <p className="mt-1.5 text-xs text-slate-400 dark:text-[#636366]">
-            Also: {drug.brandNames.slice(0, 3).join(", ")}
+            {brandLabel}: {drug.brandNames.slice(0, 3).join(", ")}
           </p>
         )}
       </button>
 
-      {/* Favorite button — absolute, outside the card button */}
       <button
         type="button"
         onClick={() => toggleFavorite(drug.id)}
