@@ -6,10 +6,10 @@ import { getTranslations } from "../i18n";
 import { AutocompleteSearch } from "../components/shared/AutocompleteSearch";
 import { DrugCard } from "../components/shared/DrugCard";
 import { DrugCardSkeleton } from "../components/shared/DrugCardSkeleton";
-import type { DrugCategory, OtcRxFilter } from "../types";
-import { ALL_CATEGORIES } from "../data/drugs";
+import type { Drug, DrugCategory, OtcRxFilter } from "../types";
+import { ALL_CATEGORIES, getDrugsByCategory } from "../data/catalog";
 import { searchRxNorm } from "../services/rxnormApi";
-import { DRUG_CATEGORY_ZH } from "../utils/medicalTranslation";
+import { DRUG_CATEGORY_ZH, translateDrugNameOnly } from "../utils/medicalTranslation";
 
 const CATEGORY_EMOJIS: Record<DrugCategory | "All", string> = {
   All: "⊕", "Pain Relief": "💊", Allergy: "🌿", "Cold & Flu": "🤧",
@@ -28,16 +28,42 @@ const TTY_BADGE_ZH: Record<string, string> = {
   IN: "活性成分", MIN: "活性成分",
 };
 
+function matchesQuery(drug: Drug, query: string) {
+  if (!query) return true;
+  const zhName = drug.chineseName ?? translateDrugNameOnly(drug.name);
+  const searchable = [
+    drug.name,
+    drug.genericName,
+    drug.activeIngredient,
+    drug.description,
+    drug.chineseName,
+    drug.chineseSummary,
+    zhName,
+    ...drug.brandNames,
+    ...drug.pillColors,
+    ...drug.imprintExamples,
+    ...(drug.aliases ?? []),
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return searchable.includes(query);
+}
+
 export function DrugSearchPage() {
   const navigate = useNavigate();
   const {
     language, searchQuery, setSearchQuery,
     activeCategory, setActiveCategory,
     otcRxFilter, setOtcRxFilter,
-    filteredDrugs,
   } = useApp();
   const t = getTranslations(language);
   const liveQuery = searchQuery.trim();
+  const q = liveQuery.toLowerCase();
+
+  const localDrugs = getDrugsByCategory(activeCategory)
+    .filter((drug) => otcRxFilter === "all" || drug.otcOrRx === otcRxFilter)
+    .filter((drug) => matchesQuery(drug, q));
 
   const { data: liveResults = [], isPending: liveLoading } = useQuery({
     queryKey: ["rxnorm-page", liveQuery],
@@ -46,11 +72,11 @@ export function DrugSearchPage() {
     staleTime: 6 * 60 * 60 * 1000,
   });
 
-  const localNames = new Set(filteredDrugs.map((drug) => drug.name.toLowerCase()));
+  const localNames = new Set(localDrugs.map((drug) => drug.name.toLowerCase()));
   const visibleLiveResults = liveResults
     .filter((result) => !localNames.has(result.name.toLowerCase()))
     .slice(0, 12);
-  const totalResults = filteredDrugs.length + visibleLiveResults.length;
+  const totalResults = localDrugs.length + visibleLiveResults.length;
   const liveTitle = language === "zh" ? "RxNorm 在线结果" : "RxNorm live results";
   const loadingText = language === "zh" ? "正在查询 RxNorm..." : "Searching RxNorm...";
   const noLocalText = language === "zh"
@@ -124,13 +150,13 @@ export function DrugSearchPage() {
       </div>
 
       <div className="px-4 pb-4">
-        {filteredDrugs.length === 0 && !searchQuery ? (
+        {localDrugs.length === 0 && !searchQuery ? (
           <div className="space-y-3 mt-1">
             {[1, 2, 3].map((i) => <DrugCardSkeleton key={i} />)}
           </div>
-        ) : filteredDrugs.length > 0 ? (
+        ) : localDrugs.length > 0 ? (
           <div className="mt-1 space-y-3">
-            {filteredDrugs.map((drug) => (
+            {localDrugs.map((drug) => (
               <DrugCard
                 key={drug.id}
                 drug={drug}
