@@ -1,5 +1,5 @@
 import type { PillIdentifierQuery, PillIdentifierResult } from "../types";
-import { drugs } from "./drugs";
+import { drugs } from "./catalog";
 
 export function runPillIdentifier(query: PillIdentifierQuery): PillIdentifierResult[] {
   const { color, shape, imprint } = query;
