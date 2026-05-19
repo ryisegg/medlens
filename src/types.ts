@@ -14,7 +14,8 @@ export type DrugCategory =
 
 export type DosageForm =
   | "tablet" | "capsule" | "liquid" | "cream"
-  | "patch" | "injection" | "chewable" | "softgel";
+  | "patch" | "injection" | "chewable" | "softgel"
+  | "inhaler" | "spray" | "drops";
 
 export type PregnancyCategory = "A" | "B" | "C" | "D" | "X" | "N";
 
@@ -37,6 +38,9 @@ export interface Drug {
   category: DrugCategory;
   activeIngredient: string;
   description: string;
+  chineseName?: string;
+  chineseSummary?: string;
+  aliases?: string[];
   uses: string[];
   mechanism: string;
   dosageForms: DosageForm[];
