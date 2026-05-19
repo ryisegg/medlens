@@ -10,6 +10,8 @@ import { DrugDetailRoute } from "./pages/DrugDetailRoute";
 import { ApiDrugDetailRoute } from "./pages/ApiDrugDetailRoute";
 import { IdentifierPage } from "./pages/IdentifierPage";
 import { SymptomPage } from "./pages/SymptomPage";
+import { CalendarPage } from "./pages/CalendarPage";
+import { CabinetPage } from "./pages/CabinetPage";
 import { SafetyPage } from "./pages/SafetyPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 
@@ -58,6 +60,8 @@ function AppShell() {
           <Route path="/drugs/:id" element={<DrugDetailRoute />} />
           <Route path="/identifier" element={<IdentifierPage />} />
           <Route path="/symptoms" element={<SymptomPage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/cabinet" element={<CabinetPage />} />
           <Route path="/safety" element={<SafetyPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
