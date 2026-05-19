@@ -446,6 +446,16 @@ export function ApiDrugDetailView({ drug }: Props) {
           </p>
         )}
         <p>{t.drug.lastReviewed}: {drug.lastUpdated}</p>
+        <p className="pt-1 border-t border-slate-100 dark:border-[#2c2c2e]">
+          <a
+            href={`https://www.nmpa.gov.cn/datasearch/search-info.html?type=drugs&name=${encodeURIComponent(zhEntry?.genericZh ?? drug.genericName ?? drug.name)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 dark:text-[#0a84ff] hover:underline"
+          >
+            🔍 查看国家药监局信息{zhEntry?.genericZh ? `（${zhEntry.genericZh}）` : ""}
+          </a>
+        </p>
       </Card>
 
       <button
