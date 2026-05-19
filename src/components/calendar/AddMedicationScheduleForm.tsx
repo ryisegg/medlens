@@ -22,7 +22,15 @@ function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function addHours(firstTime: string, hours: number) {
+  const [startHour, minute] = firstTime.split(":").map(Number);
+  const nextHour = (startHour + hours) % 24;
+  return `${String(nextHour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
 function buildTimes(frequency: string, firstTime: string, everyHours: string) {
+  if (frequency === "twice-daily") return [firstTime, addHours(firstTime, 12)].sort();
+  if (frequency === "three-times-daily") return [firstTime, addHours(firstTime, 8), addHours(firstTime, 16)].sort();
   if (frequency !== "every-x-hours") return [firstTime];
   const hours = Number(everyHours) || 8;
   const [startHour, minute] = firstTime.split(":").map(Number);
@@ -127,7 +135,7 @@ export function AddMedicationScheduleForm({ language, cabinetItems, onAdd, onCan
           </div>
         </div>
         <div>
-          <label className={label}>{isZh ? "提醒时间" : "Reminder time"}</label>
+          <label className={label}>{isZh ? "第一次提醒时间" : "First reminder time"}</label>
           <input className={input} type="time" value={time} onChange={(e) => setTime(e.target.value)} />
         </div>
         {cabinetItems.length > 0 && (
