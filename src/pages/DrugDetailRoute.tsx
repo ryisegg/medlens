@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getDrugById } from "../data/drugs";
+import { getDrugById } from "../data/catalog";
 import { useApp } from "../context/AppContext";
 import { getTranslations } from "../i18n";
 import { DrugDetailPage } from "../components/drugs/DrugDetailPage";
