@@ -104,6 +104,41 @@ export interface Reminder {
   time: string;
 }
 
+export type DoseStatus = "upcoming" | "taken" | "missed" | "skipped";
+
+export interface MedicationSchedule {
+  id: string;
+  medicationName: string;
+  dosage: string;
+  frequency: string;
+  times: string[];
+  startDate: string;
+  endDate?: string;
+  notes?: string;
+  linkedCabinetItemId?: string;
+}
+
+export interface DoseLog {
+  id: string;
+  scheduleId: string;
+  date: string;
+  time: string;
+  status: DoseStatus;
+}
+
+export interface CabinetItem {
+  id: string;
+  medicationName: string;
+  genericName?: string;
+  strength?: string;
+  quantity: number;
+  dosageForm?: string;
+  expirationDate?: string;
+  type: "OTC" | "Prescription";
+  storageLocation?: string;
+  notes?: string;
+}
+
 export interface AppContextValue {
   // Language
   language: Language;
