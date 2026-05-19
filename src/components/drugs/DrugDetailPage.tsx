@@ -68,6 +68,9 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
             <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
               {drug.category}
             </span>
+            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]">
+              {drug.source}
+            </span>
           </div>
           <button
             type="button"
@@ -98,7 +101,7 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
       <WarningBanner level="caution" title={t.drug.disclaimer} message={t.drug.disclaimerDesc} />
 
       <Card>
-        <SectionTitle>{t.drug.uses}</SectionTitle>
+        <SectionTitle>{language === "zh" ? `${t.drug.uses} / Uses` : t.drug.uses}</SectionTitle>
         <ul className="space-y-2">
           {drug.uses.map((use, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-slate-700 dark:text-[#8e8e93]">
@@ -132,7 +135,7 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
       </Card>
 
       <Card>
-        <SectionTitle>{t.drug.sideEffects}</SectionTitle>
+        <SectionTitle>{language === "zh" ? `Side Effects / ${t.drug.sideEffects}` : t.drug.sideEffects}</SectionTitle>
         <div className="space-y-3">
           {(["common", "serious", "rare"] as SideEffect["severity"][]).map((sev) => {
             const effects = drug.sideEffects.filter((s) => s.severity === sev);
@@ -168,7 +171,7 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
 
       {drug.interactions.length > 0 && (
         <Card>
-          <SectionTitle>{t.drug.interactions}</SectionTitle>
+          <SectionTitle>{language === "zh" ? `Drug Interactions / ${t.drug.interactions}` : t.drug.interactions}</SectionTitle>
           <div className="space-y-2">
             {drug.interactions.map((inter, i) => (
               <InteractionWarning
@@ -199,7 +202,9 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
       </Card>
 
       <div className="rounded-2xl border-2 border-red-200 bg-red-50 px-5 py-4 dark:border-red-800 dark:bg-red-950/40">
-        <h2 className="mb-3 text-[10px] font-bold text-red-800 uppercase tracking-widest dark:text-red-300">{t.drug.whenToCallDoctor}</h2>
+        <h2 className="mb-3 text-[10px] font-bold text-red-800 uppercase tracking-widest dark:text-red-300">
+          {language === "zh" ? `When to Call a Doctor / ${t.drug.whenToCallDoctor}` : t.drug.whenToCallDoctor}
+        </h2>
         <ul className="space-y-2">
           {drug.whenToCallDoctor.map((item, i) => (
             <li key={i} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-400">

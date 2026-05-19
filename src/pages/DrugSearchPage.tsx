@@ -15,10 +15,16 @@ const CATEGORY_EMOJIS: Record<DrugCategory | "All", string> = {
   "Digestive Health": "🫁", Skin: "🧴", Sleep: "🌙", Vitamins: "⭐", "Chronic Conditions": "🏥",
 };
 
-const TTY_BADGE: Record<string, string> = {
+const TTY_BADGE_EN: Record<string, string> = {
   SBD: "Brand", SBN: "Brand", BN: "Brand",
   SCD: "Generic", GPCK: "Generic",
   IN: "Ingredient", MIN: "Ingredient",
+};
+
+const TTY_BADGE_ZH: Record<string, string> = {
+  SBD: "品牌药", SBN: "品牌药", BN: "品牌药",
+  SCD: "通用药", GPCK: "通用药",
+  IN: "活性成分", MIN: "活性成分",
 };
 
 export function DrugSearchPage() {
@@ -54,7 +60,7 @@ export function DrugSearchPage() {
     document.title = `${t.search.title} — ${t.appName}`;
   }, [t.search.title, t.appName]);
 
-  const categories: (DrugCategory | "All")[] = ["All", ...ALL_CATEGORIES];
+  const categories = ALL_CATEGORIES.filter((c) => c !== "All") as DrugCategory[];
   const otcOptions: { value: OtcRxFilter; label: string }[] = [
     { value: "all", label: t.search.all },
     { value: "OTC", label: t.search.otc },
@@ -94,7 +100,7 @@ export function DrugSearchPage() {
               <button
                 key={cat}
                 type="button"
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => setActiveCategory(activeCategory === cat ? "All" : cat)}
                 className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition ${
                   activeCategory === cat
                     ? "bg-blue-600 text-white shadow-sm dark:bg-[#0a84ff]"
@@ -102,7 +108,7 @@ export function DrugSearchPage() {
                 }`}
               >
                 <span>{CATEGORY_EMOJIS[cat]}</span>
-                <span>{cat === "All" ? t.search.all : cat}</span>
+                <span>{cat}</span>
               </button>
             ))}
           </div>
@@ -177,7 +183,9 @@ export function DrugSearchPage() {
                   </span>
                 </div>
                 <p className="mt-0.5 text-xs text-slate-400 dark:text-[#636366]">
-                  {TTY_BADGE[result.tty] ?? result.tty} · RXCUI {result.rxcui}
+                  {(language === "zh" ? TTY_BADGE_ZH[result.tty] : TTY_BADGE_EN[result.tty]) ?? result.tty}
+                  {" · "}
+                  {language === "zh" ? `RxCUI 药品标准编号 ${result.rxcui}` : `RXCUI ${result.rxcui}`}
                 </p>
               </button>
             ))}

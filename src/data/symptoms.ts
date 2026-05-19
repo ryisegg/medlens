@@ -1,111 +1,100 @@
 import type { SymptomMapping, SymptomSuggestion } from "../types";
+import { normalizeSymptomInput } from "../utils/medicalTranslation";
 
 export const RED_FLAG_KEYWORDS: string[] = [
-  "chest pain",
-  "chest pressure",
-  "chest tightness",
-  "difficulty breathing",
-  "can't breathe",
-  "cannot breathe",
-  "shortness of breath",
-  "stroke",
-  "face drooping",
-  "arm weakness",
-  "speech difficulty",
-  "sudden numbness",
-  "sudden confusion",
-  "sudden vision",
-  "severe allergic",
-  "anaphylaxis",
-  "throat closing",
-  "throat swelling",
-  "tongue swelling",
-  "lips swelling",
-  "overdose",
-  "took too many",
-  "took too much",
-  "accidental ingestion",
-  "suicidal",
-  "suicide",
-  "want to die",
-  "self-harm",
-  "self harm",
-  "pregnancy emergency",
-  "heavy bleeding pregnant",
-  "seizure",
-  "unconscious",
-  "unresponsive",
-  "poisoning",
+  // English
+  "chest pain", "chest pressure", "chest tightness",
+  "difficulty breathing", "can't breathe", "cannot breathe", "shortness of breath",
+  "stroke", "face drooping", "arm weakness", "speech difficulty",
+  "sudden numbness", "sudden confusion", "sudden vision",
+  "severe allergic", "anaphylaxis", "throat closing", "throat swelling",
+  "tongue swelling", "lips swelling",
+  "overdose", "took too many", "took too much", "accidental ingestion",
+  "suicidal", "suicide", "want to die", "self-harm", "self harm",
+  "pregnancy emergency", "heavy bleeding pregnant",
+  "seizure", "unconscious", "unresponsive", "poisoning",
+  // Chinese
+  "胸痛", "胸部压迫", "胸闷",
+  "呼吸困难", "无法呼吸", "喘不过气",
+  "中风", "口角下垂", "单侧无力", "言语不清", "突然麻木", "突然视力",
+  "过敏性休克", "严重过敏", "喉咙发紧", "喉咙肿胀", "舌头肿胀",
+  "药物过量", "服药过多", "误服",
+  "自杀", "想死", "自伤", "自残",
+  "癫痫发作", "昏迷", "失去意识", "意识丧失",
+  "中毒",
 ];
 
 export interface RedFlagGroup {
   triggers: string[];
   emergencyLine: string;
+  emergencyLineZh: string;
   callAction: string;
+  callActionZh: string;
 }
 
 export const RED_FLAG_GROUPS: RedFlagGroup[] = [
   {
     triggers: [
-      "chest pain",
-      "chest pressure",
-      "chest tightness",
-      "shortness of breath",
-      "difficulty breathing",
-      "can't breathe",
-      "cannot breathe",
+      "chest pain", "chest pressure", "chest tightness",
+      "shortness of breath", "difficulty breathing", "can't breathe", "cannot breathe",
+      "胸痛", "胸部压迫", "胸闷", "呼吸困难", "无法呼吸", "喘不过气",
     ],
-    emergencyLine:
-      "These symptoms may indicate a heart attack or serious breathing emergency.",
+    emergencyLine: "These symptoms may indicate a heart attack or serious breathing emergency.",
+    emergencyLineZh: "这些症状可能提示心脏病发作或严重呼吸紧急情况。",
     callAction: "Call 911 immediately",
+    callActionZh: "立即拨打 911 / 120",
   },
   {
     triggers: [
-      "stroke",
-      "face drooping",
-      "arm weakness",
-      "speech difficulty",
-      "sudden numbness",
-      "sudden confusion",
-      "sudden vision",
+      "stroke", "face drooping", "arm weakness", "speech difficulty",
+      "sudden numbness", "sudden confusion", "sudden vision",
+      "中风", "口角下垂", "单侧无力", "言语不清", "突然麻木", "突然视力",
     ],
     emergencyLine: "These could be signs of a stroke — every minute matters.",
-    callAction:
-      "Call 911 immediately — use the FAST acronym (Face, Arms, Speech, Time)",
+    emergencyLineZh: "这些可能是中风迹象，时间至关重要，请立即就医。",
+    callAction: "Call 911 immediately — use the FAST acronym (Face, Arms, Speech, Time)",
+    callActionZh: "立即拨打 911 / 120 — 记住 FAST：面部下垂、手臂无力、言语不清、立即呼救",
   },
   {
     triggers: [
-      "severe allergic",
-      "anaphylaxis",
-      "throat closing",
-      "throat swelling",
-      "tongue swelling",
-      "lips swelling",
+      "severe allergic", "anaphylaxis", "throat closing", "throat swelling",
+      "tongue swelling", "lips swelling",
+      "过敏性休克", "严重过敏", "喉咙发紧", "喉咙肿胀", "舌头肿胀",
     ],
     emergencyLine: "This may be a severe allergic reaction (anaphylaxis).",
-    callAction:
-      "Use an epinephrine auto-injector (EpiPen) if available, then call 911",
-  },
-  {
-    triggers: ["overdose", "took too many", "took too much", "accidental ingestion", "poisoning"],
-    emergencyLine: "Possible overdose or poisoning — do not wait for symptoms to worsen.",
-    callAction: "Call Poison Control at 1-800-222-1222 or call 911",
-  },
-  {
-    triggers: ["suicidal", "suicide", "want to die", "self-harm", "self harm"],
-    emergencyLine: "If you or someone you know is in crisis, please reach out now.",
-    callAction: "Call or text 988 (Suicide & Crisis Lifeline) or call 911",
+    emergencyLineZh: "这可能是严重过敏反应（过敏性休克）。",
+    callAction: "Use an epinephrine auto-injector (EpiPen) if available, then call 911",
+    callActionZh: "如有肾上腺素自动注射器（EpiPen）请立即使用，然后拨打 911 / 120",
   },
   {
     triggers: [
-      "pregnancy emergency",
-      "heavy bleeding pregnant",
-      "seizure",
-      "unconscious",
-      "unresponsive",
+      "overdose", "took too many", "took too much", "accidental ingestion", "poisoning",
+      "药物过量", "服药过多", "误服", "中毒",
+    ],
+    emergencyLine: "Possible overdose or poisoning — do not wait for symptoms to worsen.",
+    emergencyLineZh: "疑似药物过量或中毒，请勿等待症状恶化。",
+    callAction: "Call Poison Control at 1-800-222-1222 or call 911",
+    callActionZh: "拨打中毒控制中心 1-800-222-1222 或 911 / 120",
+  },
+  {
+    triggers: [
+      "suicidal", "suicide", "want to die", "self-harm", "self harm",
+      "自杀", "想死", "自伤", "自残",
+    ],
+    emergencyLine: "If you or someone you know is in crisis, please reach out now.",
+    emergencyLineZh: "如果您或身边的人正处于心理危机，请立即寻求帮助。",
+    callAction: "Call or text 988 (Suicide & Crisis Lifeline) or call 911",
+    callActionZh: "拨打或发短信至 988 心理危机热线，或拨打 911 / 120",
+  },
+  {
+    triggers: [
+      "pregnancy emergency", "heavy bleeding pregnant", "seizure", "unconscious", "unresponsive",
+      "癫痫发作", "昏迷", "失去意识", "意识丧失",
     ],
     emergencyLine: "This requires immediate emergency medical attention.",
+    emergencyLineZh: "这需要立即紧急医疗救治。",
     callAction: "Call 911 immediately",
+    callActionZh: "立即拨打 911 / 120",
   },
 ];
 
@@ -631,7 +620,7 @@ export const CHIP_SYMPTOM_KEYWORDS: Record<string, string[]> = {
 
 export function detectRedFlags(input: string): string[] {
   const lower = input.toLowerCase();
-  return RED_FLAG_KEYWORDS.filter((kw) => lower.includes(kw));
+  return RED_FLAG_KEYWORDS.filter((kw) => lower.includes(kw) || input.includes(kw));
 }
 
 export function getMatchedRedFlagGroups(flags: string[]): RedFlagGroup[] {
@@ -646,7 +635,8 @@ export function getMatchedRedFlagGroups(flags: string[]): RedFlagGroup[] {
 }
 
 export function getSymptomSuggestions(input: string): SymptomSuggestion[] {
-  const lower = input.toLowerCase();
+  const normalized = normalizeSymptomInput(input);
+  const lower = normalized.toLowerCase();
   const seen = new Set<string>();
   const results: SymptomSuggestion[] = [];
 

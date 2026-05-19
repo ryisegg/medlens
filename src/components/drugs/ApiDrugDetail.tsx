@@ -16,12 +16,12 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
   );
 }
 
-function SectionLabel({ icon, children }: { icon: string; children: React.ReactNode }) {
+function SectionLabel({ icon, children, zhLabel }: { icon: string; children: React.ReactNode; zhLabel?: string }) {
   return (
     <div className="mb-2 flex items-center gap-1.5">
       <span className="text-base leading-none">{icon}</span>
       <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-[#636366]">
-        {children}
+        {children}{zhLabel && <span className="ml-1 normal-case not-italic">/ {zhLabel}</span>}
       </h2>
     </div>
   );
@@ -123,6 +123,7 @@ export function ApiDrugDetailView({ drug }: Props) {
   const { language } = useApp();
   const t = getTranslations(language);
 
+  const isZh = language === "zh";
   const risks = useMemo(() => analyzeDrugRisks(drug), [drug]);
   const zhEntry = useMemo(() => lookupZhDrug(drug.genericName ?? drug.name), [drug.genericName, drug.name]);
 
@@ -159,27 +160,27 @@ export function ApiDrugDetailView({ drug }: Props) {
 
         {drug.genericName && drug.genericName.toLowerCase() !== drug.name.toLowerCase() && (
           <p className="mt-0.5 text-sm text-slate-500 dark:text-[#8e8e93]">
-            {t.drug.genericName}:{" "}
-            <span className="font-medium text-slate-700 dark:text-white">{drug.genericName}</span>
-            {language === "zh" && zhEntry && (
+            <span className="font-medium">{isZh ? "通用名 (Generic)" : t.drug.genericName}:</span>{" "}
+            <span className="text-slate-700 dark:text-white">{drug.genericName}</span>
+            {isZh && zhEntry && (
               <span className="ml-1.5 text-blue-500 dark:text-[#0a84ff]">({zhEntry.genericZh})</span>
             )}
           </p>
         )}
 
-        {/* Chinese brand names */}
-        {language === "zh" && zhEntry?.brandZh && (
+        {drug.brandNames.length > 0 && (
           <p className="mt-0.5 text-sm text-slate-500 dark:text-[#8e8e93]">
-            常见品牌：<span className="font-medium text-slate-700 dark:text-white">{zhEntry.brandZh}</span>
+            <span className="font-medium">{isZh ? "商品名 (Brand)" : t.drug.brandNames}:</span>{" "}
+            <span className="text-slate-700 dark:text-white">
+              {drug.brandNames.slice(0, 5).join(", ")}
+            </span>
           </p>
         )}
 
-        {drug.brandNames.length > 0 && (
+        {/* Chinese brand names */}
+        {isZh && zhEntry?.brandZh && (
           <p className="mt-0.5 text-sm text-slate-500 dark:text-[#8e8e93]">
-            {t.drug.brandNames}:{" "}
-            <span className="font-medium text-slate-700 dark:text-white">
-              {drug.brandNames.slice(0, 5).join(", ")}
-            </span>
+            常用品牌：<span className="font-medium text-slate-700 dark:text-white">{zhEntry.brandZh}</span>
           </p>
         )}
 
@@ -251,7 +252,9 @@ export function ApiDrugDetailView({ drug }: Props) {
           <div className="grid grid-cols-2 gap-4">
             {drug.activeIngredients && drug.activeIngredients.length > 0 && (
               <div>
-                <SectionLabel icon="🔬">{t.drug.activeIngredient}</SectionLabel>
+                <SectionLabel icon="🔬" zhLabel={isZh ? "活性成分" : undefined}>
+                  {language === "zh" ? "Active Ingredients" : t.drug.activeIngredient}
+                </SectionLabel>
                 <div className="flex flex-wrap gap-1">
                   {drug.activeIngredients.map((ing) => (
                     <span key={ing} className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]">
@@ -263,7 +266,9 @@ export function ApiDrugDetailView({ drug }: Props) {
             )}
             {drug.dosageForms && drug.dosageForms.length > 0 && (
               <div>
-                <SectionLabel icon="💊">{t.drug.dosageForms}</SectionLabel>
+                <SectionLabel icon="💊" zhLabel={isZh ? "剂型" : undefined}>
+                  {language === "zh" ? "Dosage Forms" : t.drug.dosageForms}
+                </SectionLabel>
                 <div className="flex flex-wrap gap-1">
                   {drug.dosageForms.map((f) => (
                     <span key={f} className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600 capitalize dark:bg-[#2c2c2e] dark:text-[#8e8e93]">
@@ -280,7 +285,9 @@ export function ApiDrugDetailView({ drug }: Props) {
       {/* Indications */}
       {drug.indicationsAndUsage && (
         <Card>
-          <SectionLabel icon="✅">{t.drug.uses}</SectionLabel>
+          <SectionLabel icon="✅" zhLabel={isZh ? "用途" : undefined}>
+            {language === "zh" ? "Uses" : t.drug.uses}
+          </SectionLabel>
           <LongText text={drug.indicationsAndUsage} />
         </Card>
       )}
@@ -288,7 +295,9 @@ export function ApiDrugDetailView({ drug }: Props) {
       {/* Dosage */}
       {drug.dosageAndAdministration && (
         <Card>
-          <SectionLabel icon="📏">{t.api.dosageAndAdmin}</SectionLabel>
+          <SectionLabel icon="📏" zhLabel={isZh ? "用法用量" : undefined}>
+            {language === "zh" ? "Dosage & Administration" : t.api.dosageAndAdmin}
+          </SectionLabel>
           <LongText text={drug.dosageAndAdministration} />
         </Card>
       )}
@@ -297,7 +306,7 @@ export function ApiDrugDetailView({ drug }: Props) {
       {drug.warnings && (
         <WarningSection
           icon="⚠️"
-          title={t.api.warnings}
+          title={isZh ? "Warnings / 警告" : t.api.warnings}
           text={drug.warnings}
           accentClass="border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300"
         />
@@ -307,7 +316,7 @@ export function ApiDrugDetailView({ drug }: Props) {
       {drug.contraindications && (
         <WarningSection
           icon="🚫"
-          title={t.drug.contraindications}
+          title={isZh ? "Do Not Use / 禁忌人群" : t.drug.contraindications}
           text={drug.contraindications}
           accentClass="border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300"
         />
@@ -316,7 +325,9 @@ export function ApiDrugDetailView({ drug }: Props) {
       {/* Side effects */}
       {drug.adverseReactions && (
         <Card>
-          <SectionLabel icon="🩺">{t.drug.sideEffects}</SectionLabel>
+          <SectionLabel icon="🩺" zhLabel={isZh ? "副作用" : undefined}>
+            {language === "zh" ? "Side Effects" : t.drug.sideEffects}
+          </SectionLabel>
           <BulletList text={drug.adverseReactions} />
         </Card>
       )}
@@ -324,7 +335,9 @@ export function ApiDrugDetailView({ drug }: Props) {
       {/* Drug interactions */}
       {drug.drugInteractions && (
         <Card>
-          <SectionLabel icon="⚡">{t.drug.interactions}</SectionLabel>
+          <SectionLabel icon="⚡" zhLabel={isZh ? "药物相互作用" : undefined}>
+            {language === "zh" ? "Drug Interactions" : t.drug.interactions}
+          </SectionLabel>
           <LongText text={drug.drugInteractions} />
         </Card>
       )}
@@ -332,17 +345,23 @@ export function ApiDrugDetailView({ drug }: Props) {
       {/* Pregnancy */}
       {(drug.pregnancyInfo || drug.nursingMotherInfo) && (
         <Card>
-          <SectionLabel icon="🤰">{t.drug.pregnancy}</SectionLabel>
+          <SectionLabel icon="🤰" zhLabel={isZh ? "妊娠期与哺乳期" : undefined}>
+            {language === "zh" ? "Pregnancy & Breastfeeding" : t.drug.pregnancy}
+          </SectionLabel>
           <div className="space-y-3">
             {drug.pregnancyInfo && (
               <div>
-                <p className="mb-1 text-xs font-semibold text-slate-500 dark:text-[#636366]">{t.drug.pregnancyNote}</p>
+                <p className="mb-1 text-xs font-semibold text-slate-500 dark:text-[#636366]">
+                  {isZh ? "Pregnancy / 妊娠期" : t.drug.pregnancyNote}
+                </p>
                 <p className="text-sm leading-relaxed text-slate-700 dark:text-[#8e8e93]">{drug.pregnancyInfo}</p>
               </div>
             )}
             {drug.nursingMotherInfo && (
               <div>
-                <p className="mb-1 text-xs font-semibold text-slate-500 dark:text-[#636366]">{t.api.nursingMothers}</p>
+                <p className="mb-1 text-xs font-semibold text-slate-500 dark:text-[#636366]">
+                  {isZh ? "Nursing Mothers / 哺乳期" : t.api.nursingMothers}
+                </p>
                 <p className="text-sm leading-relaxed text-slate-700 dark:text-[#8e8e93]">{drug.nursingMotherInfo}</p>
               </div>
             )}

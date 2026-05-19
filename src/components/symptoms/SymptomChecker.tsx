@@ -4,6 +4,7 @@ import { getTranslations } from "../../i18n";
 import { WarningBanner } from "../shared/WarningBanner";
 import { getMatchedRedFlagGroups } from "../../data/symptoms";
 import { getDrugById } from "../../data/drugs";
+import { translateDrugNameOnly, translateCategory } from "../../utils/medicalTranslation";
 import type { SymptomSuggestion } from "../../types";
 import type { Translations } from "../../i18n";
 
@@ -25,15 +26,20 @@ const CHIP_ICONS: Record<string, string> = {
 interface SuggestionCardProps {
   suggestion: SymptomSuggestion;
   t: Translations;
+  language: string;
 }
 
-function SymptomSuggestionCard({ suggestion, t }: SuggestionCardProps) {
+function SymptomSuggestionCard({ suggestion, t, language }: SuggestionCardProps) {
   const navigate = useNavigate();
   const ts = t.symptoms;
+  const isZh = language === "zh";
+  const categoryDisplay = isZh
+    ? `${translateCategory(suggestion.categoryName)} (${suggestion.categoryName})`
+    : suggestion.categoryName;
 
   return (
     <div className="rounded-2xl bg-white px-5 py-4 shadow-sm dark:bg-[#1c1c1e]">
-      <h3 className="text-base font-semibold text-slate-900 dark:text-white">{suggestion.categoryName}</h3>
+      <h3 className="text-base font-semibold text-slate-900 dark:text-white">{categoryDisplay}</h3>
 
       {suggestion.exampleDrugs.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -46,7 +52,7 @@ function SymptomSuggestionCard({ suggestion, t }: SuggestionCardProps) {
                 onClick={() => navigate(`/drugs/${id}`)}
                 className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-950/40 dark:text-[#0a84ff]"
               >
-                {drug.name}
+                {isZh ? `${translateDrugNameOnly(drug.name)} (${drug.name})` : drug.name}
               </button>
             ) : null;
           })}
@@ -82,6 +88,7 @@ export function SymptomChecker() {
     detectedRedFlags, symptomSuggestions, runSymptomCheck,
   } = useApp();
   const t = getTranslations(language);
+  const isZh = language === "zh";
   const redFlagGroups = getMatchedRedFlagGroups(detectedRedFlags);
   const hasInput = selectedSymptoms.length > 0 || symptomInput.trim().length > 0;
 
@@ -155,14 +162,18 @@ export function SymptomChecker() {
                 </svg>
                 <span className="text-base font-bold">{t.warnings.emergency}</span>
               </div>
-              <p className="text-sm text-red-800 dark:text-red-300">{group.emergencyLine}</p>
+              <p className="text-sm text-red-800 dark:text-red-300">
+                {isZh ? group.emergencyLineZh : group.emergencyLine}
+              </p>
               <div className="mt-3 rounded-xl bg-red-600 px-4 py-3 text-center dark:bg-red-700">
-                <p className="text-base font-bold text-white">{group.callAction}</p>
+                <p className="text-base font-bold text-white">
+                  {isZh ? group.callActionZh : group.callAction}
+                </p>
               </div>
             </div>
           ))}
           <p className="text-center text-xs text-slate-500 dark:text-[#636366]">
-            Do not attempt to self-treat emergency symptoms.
+            {isZh ? "紧急症状请勿自行用药处理。" : "Do not attempt to self-treat emergency symptoms."}
           </p>
         </div>
       )}
@@ -172,7 +183,7 @@ export function SymptomChecker() {
         <div className="space-y-3">
           <p className="px-1 text-sm font-semibold text-slate-700 dark:text-white">{t.symptoms.results}</p>
           {symptomSuggestions.map((s, i) => (
-            <SymptomSuggestionCard key={i} suggestion={s} t={t} />
+            <SymptomSuggestionCard key={i} suggestion={s} t={t} language={language} />
           ))}
         </div>
       )}

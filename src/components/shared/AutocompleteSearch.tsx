@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { searchRxNorm, getSpellingSuggestions } from "../../services/rxnormApi";
 import { searchDrugs } from "../../data/drugs";
+import { useApp } from "../../context/AppContext";
 import { DropdownSkeleton } from "./DrugCardSkeleton";
 import type { ApiSearchResult } from "../../types/api";
 import type { Drug } from "../../types";
@@ -19,10 +20,16 @@ type LocalHit = { kind: "local"; drug: Drug };
 type LiveHit = { kind: "live"; result: ApiSearchResult };
 type Hit = LocalHit | LiveHit;
 
-const TTY_LABEL: Record<string, string> = {
+const TTY_LABEL_EN: Record<string, string> = {
   SBD: "Brand", SBN: "Brand", BN: "Brand",
   SCD: "Generic", GPCK: "Generic",
   IN: "Ingredient", MIN: "Ingredient",
+};
+
+const TTY_LABEL_ZH: Record<string, string> = {
+  SBD: "品牌药", SBN: "品牌药", BN: "品牌药",
+  SCD: "通用药", GPCK: "通用药",
+  IN: "活性成分", MIN: "活性成分",
 };
 
 function hitPath(h: Hit): string {
@@ -35,15 +42,18 @@ function hitLabel(h: Hit): string {
   return h.kind === "local" ? h.drug.name : h.result.name;
 }
 
-function hitSub(h: Hit): string {
+function hitSub(h: Hit, isZh: boolean): string {
   if (h.kind === "local") return h.drug.genericName;
-  return TTY_LABEL[h.result.tty] ?? h.result.tty;
+  const label = isZh ? TTY_LABEL_ZH[h.result.tty] : TTY_LABEL_EN[h.result.tty];
+  return label ?? h.result.tty;
 }
 
-function hitBadge(h: Hit): { text: string; color: string } {
+function hitBadge(h: Hit, isZh: boolean): { text: string; color: string } {
   if (h.kind === "local") {
+    const otcText = isZh ? "非处方" : "OTC";
+    const rxText = isZh ? "处方药" : "Rx";
     return {
-      text: h.drug.otcOrRx === "OTC" ? "OTC" : "Rx",
+      text: h.drug.otcOrRx === "OTC" ? otcText : rxText,
       color: h.drug.otcOrRx === "OTC"
         ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
         : "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
@@ -54,6 +64,8 @@ function hitBadge(h: Hit): { text: string; color: string } {
 
 export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, className = "" }: Props) {
   const navigate = useNavigate();
+  const { language } = useApp();
+  const isZh = language === "zh";
   const [activeIndex, setActiveIndex] = useState(-1);
   const [debouncedValue, setDebouncedValue] = useState(value);
   const [closedAtQuery, setClosedAtQuery] = useState<string>("");
@@ -211,7 +223,7 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
           {liveLoading && hits.length === 0 && <DropdownSkeleton />}
 
           {hits.map((hit, i) => {
-            const badge = hitBadge(hit);
+            const badge = hitBadge(hit, isZh);
             const isActive = i === activeIndex;
             return (
               <button
@@ -233,7 +245,7 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{hitLabel(hit)}</p>
-                  <p className="truncate text-xs text-slate-400 dark:text-[#636366]">{hitSub(hit)}</p>
+                  <p className="truncate text-xs text-slate-400 dark:text-[#636366]">{hitSub(hit, isZh)}</p>
                 </div>
                 <span className={`flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold ${badge.color}`}>
                   {badge.text}
