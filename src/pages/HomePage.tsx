@@ -8,16 +8,19 @@ import { DRUG_CATEGORY_ZH } from "../utils/medicalTranslation";
 import type { DrugCategory } from "../types";
 
 const COMMON_SEARCHES = ["Triamcinolone", "Ibuprofen", "Tylenol", "Benadryl", "Metformin", "Lisinopril"];
-
-const CATEGORIES: { cat: DrugCategory; icon: string }[] = [
-  { cat: "Pain Relief", icon: "Pain" }, { cat: "Allergy", icon: "Allergy" },
-  { cat: "Cold & Flu", icon: "Cold" }, { cat: "Digestive Health", icon: "Gut" },
-  { cat: "Skin", icon: "Skin" }, { cat: "Sleep", icon: "Sleep" },
-  { cat: "Vitamins", icon: "Vita" }, { cat: "Chronic Conditions", icon: "Rx" },
-];
-
 const QUICK_SYMPTOMS = ["发烧 2 天，头痛", "咳嗽喉咙痛", "皮疹很痒", "胃痛恶心"];
 const QUICK_SYMPTOMS_EN = ["Fever for 2 days with headache", "Cough and sore throat", "Itchy rash", "Stomach pain and nausea"];
+
+const CATEGORIES: { cat: DrugCategory; shortZh: string; shortEn: string }[] = [
+  { cat: "Pain Relief", shortZh: "止痛", shortEn: "Pain" },
+  { cat: "Allergy", shortZh: "过敏", shortEn: "Allergy" },
+  { cat: "Cold & Flu", shortZh: "感冒", shortEn: "Cold" },
+  { cat: "Digestive Health", shortZh: "肠胃", shortEn: "Gut" },
+  { cat: "Skin", shortZh: "皮肤", shortEn: "Skin" },
+  { cat: "Sleep", shortZh: "睡眠", shortEn: "Sleep" },
+  { cat: "Vitamins", shortZh: "营养", shortEn: "Vita" },
+  { cat: "Chronic Conditions", shortZh: "慢病", shortEn: "Rx" },
+];
 
 type ActiveTool = "drug" | "symptom" | "pill";
 
@@ -38,8 +41,7 @@ function AddReminderSheet({ onClose, onAdd, t }: AddReminderSheetProps) {
   const [drugName, setDrugName] = useState("");
   const [dosage, setDosage] = useState("");
   const [time, setTime] = useState("08:00");
-
-  const inputClass = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none dark:border-[#3a3a3c] dark:bg-[#2c2c2e] dark:text-white dark:placeholder:text-[#636366]";
+  const inputClass = "w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none dark:border-[#3a3a3c] dark:bg-[#2c2c2e] dark:text-white dark:placeholder:text-[#636366]";
 
   return (
     <div className="fixed inset-0 z-50 flex items-end">
@@ -49,34 +51,28 @@ function AddReminderSheet({ onClose, onAdd, t }: AddReminderSheetProps) {
         <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">{t.reminders.add}</h2>
         <div className="space-y-3">
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#8e8e93]">
-              {t.reminders.drugName}
-            </label>
-            <input type="text" value={drugName} onChange={(e) => setDrugName(e.target.value)}
-              placeholder={t.reminders.drugNamePlaceholder} className={inputClass} autoFocus />
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#8e8e93]">{t.reminders.drugName}</label>
+            <input value={drugName} onChange={(e) => setDrugName(e.target.value)} placeholder={t.reminders.drugNamePlaceholder} className={inputClass} autoFocus />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#8e8e93]">
-              {t.reminders.dosage}
-            </label>
-            <input type="text" value={dosage} onChange={(e) => setDosage(e.target.value)}
-              placeholder={t.reminders.dosagePlaceholder} className={inputClass} />
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#8e8e93]">{t.reminders.dosage}</label>
+            <input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder={t.reminders.dosagePlaceholder} className={inputClass} />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#8e8e93]">
-              {t.reminders.time}
-            </label>
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-[#8e8e93]">{t.reminders.time}</label>
             <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={inputClass} />
           </div>
         </div>
         <div className="mt-5 flex gap-3">
-          <button type="button" onClick={onClose}
-            className="flex-1 rounded-2xl border border-slate-200 py-3 text-sm font-semibold text-slate-600 dark:border-[#3a3a3c] dark:text-[#8e8e93]">
+          <button type="button" onClick={onClose} className="flex-1 rounded-2xl border border-slate-200 py-3 text-sm font-semibold text-slate-600 dark:border-[#3a3a3c] dark:text-[#8e8e93]">
             {t.reminders.cancel}
           </button>
-          <button type="button" disabled={!drugName.trim()}
+          <button
+            type="button"
+            disabled={!drugName.trim()}
             onClick={() => { onAdd({ drugName: drugName.trim(), dosage: dosage.trim(), time }); onClose(); }}
-            className="flex-1 rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white disabled:opacity-40 dark:bg-[#0a84ff]">
+            className="flex-1 rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white disabled:opacity-40 dark:bg-[#0a84ff]"
+          >
             {t.reminders.save}
           </button>
         </div>
@@ -92,11 +88,12 @@ export function HomePage() {
     recentlyViewed, favorites, reminders, addReminder, removeReminder,
   } = useApp();
   const t = getTranslations(language);
-  const [showAddReminder, setShowAddReminder] = useState(false);
+  const isZh = language === "zh";
   const [activeTool, setActiveTool] = useState<ActiveTool>("drug");
   const [drugDraft, setDrugDraft] = useState("");
   const [symptomDraft, setSymptomDraft] = useState("");
-  const isZh = language === "zh";
+  const [pillDraft, setPillDraft] = useState("");
+  const [showAddReminder, setShowAddReminder] = useState(false);
 
   useEffect(() => {
     document.title = t.appName;
@@ -120,210 +117,181 @@ export function HomePage() {
     navigate("/symptoms");
   };
 
-  const handleCategory = (cat: DrugCategory) => {
-    setActiveCategory(cat);
-    navigate("/drugs");
+  const handlePillIdentify = () => {
+    navigate("/identifier");
   };
 
-  const toolClass = (tool: ActiveTool) => activeTool === tool
-    ? "bg-slate-950 text-white shadow-sm dark:bg-white dark:text-black"
-    : "bg-white text-slate-600 shadow-sm dark:bg-[#1c1c1e] dark:text-[#c7c7cc]";
+  const runActiveTool = () => {
+    if (activeTool === "drug") handleDrugSearch();
+    if (activeTool === "symptom") handleSymptomCheck();
+    if (activeTool === "pill") handlePillIdentify();
+  };
+
+  const activeCanRun = activeTool === "drug"
+    ? drugDraft.trim().length > 0
+    : activeTool === "symptom"
+      ? symptomDraft.trim().length > 0
+      : true;
 
   const quickSymptoms = isZh ? QUICK_SYMPTOMS : QUICK_SYMPTOMS_EN;
 
   return (
-    <div className="space-y-4 px-4 py-4">
-      <section className="rounded-[28px] bg-white p-4 shadow-sm dark:bg-[#1c1c1e]">
-        <div className="mb-4">
-          <p className="text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-[#0a84ff]">
-            {isZh ? "小药房" : "MedLens"}
-          </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-normal text-slate-950 dark:text-white">
-            {isZh ? "今天想确认什么？" : "What do you want to check?"}
-          </h1>
+    <div className="px-4 py-4">
+      <section className="border-b border-slate-200 pb-4 dark:border-[#2c2c2e]">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
+              {isZh ? "小药房" : "MedLens"}
+            </p>
+            <h1 className="mt-1 text-2xl font-bold text-slate-950 dark:text-white">
+              {isZh ? "先查清楚，再用药。" : "Check first. Take safer."}
+            </h1>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowAddReminder(true)}
+            className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm dark:border-[#3a3a3c] dark:bg-[#1c1c1e] dark:text-[#c7c7cc]"
+          >
+            {isZh ? "提醒" : "Reminder"}
+          </button>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { key: "drug" as const, label: isZh ? "查药" : "Drug" },
-            { key: "symptom" as const, label: isZh ? "症状" : "Symptoms" },
-            { key: "pill" as const, label: isZh ? "识别" : "Pill ID" },
-          ].map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => setActiveTool(item.key)}
-              className={`rounded-2xl px-3 py-2.5 text-sm font-semibold transition active:scale-95 ${toolClass(item.key)}`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        <div className="mt-4 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm dark:border-[#2c2c2e] dark:bg-[#1c1c1e]">
+          <div className="grid grid-cols-3 gap-1 rounded-xl bg-slate-100 p-1 dark:bg-[#2c2c2e]">
+            {[
+              { key: "drug" as const, label: isZh ? "查药" : "Drug" },
+              { key: "symptom" as const, label: isZh ? "症状" : "Symptoms" },
+              { key: "pill" as const, label: isZh ? "识别" : "Pill ID" },
+            ].map((item) => (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => setActiveTool(item.key)}
+                className={`rounded-lg px-2 py-2 text-sm font-semibold transition ${
+                  activeTool === item.key
+                    ? "bg-white text-slate-950 shadow-sm dark:bg-black dark:text-white"
+                    : "text-slate-500 dark:text-[#8e8e93]"
+                }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
 
-        {activeTool === "drug" && (
-          <div className="mt-4 space-y-3">
-            <div className="flex gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-2 dark:border-[#3a3a3c] dark:bg-[#2c2c2e]">
+          <div className="mt-3">
+            {activeTool === "drug" && (
               <input
                 value={drugDraft}
                 onChange={(e) => setDrugDraft(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") handleDrugSearch(); }}
-                placeholder={isZh ? "输入药名，比如 Triamcinolone" : "Type a medicine, e.g. Triamcinolone"}
-                className="min-w-0 flex-1 bg-transparent px-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-white dark:placeholder:text-[#636366]"
+                placeholder={isZh ? "输入药名、品牌或成分" : "Medicine, brand, or ingredient"}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-base text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-500 dark:border-[#3a3a3c] dark:bg-[#2c2c2e] dark:text-white"
               />
-              <button
-                type="button"
-                onClick={() => handleDrugSearch()}
-                disabled={!drugDraft.trim()}
-                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40 dark:bg-[#0a84ff]"
-              >
-                {isZh ? "搜索" : "Search"}
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {COMMON_SEARCHES.map((term) => (
-                <button key={term} type="button" onClick={() => handleDrugSearch(term)}
-                  className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition active:scale-95 dark:bg-[#2c2c2e] dark:text-[#c7c7cc]">
-                  {term}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+            )}
 
-        {activeTool === "symptom" && (
-          <div className="mt-4 space-y-3">
-            <textarea
-              rows={3}
-              value={symptomDraft}
-              onChange={(e) => setSymptomDraft(e.target.value)}
-              placeholder={isZh ? "例如：发烧 2 天，头痛，成人，没有基础病" : "Example: fever for 2 days, headache, adult, no chronic conditions"}
-              className="w-full resize-none rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:border-blue-300 dark:border-[#3a3a3c] dark:bg-[#2c2c2e] dark:text-white dark:placeholder:text-[#636366]"
-            />
-            <button
-              type="button"
-              onClick={() => handleSymptomCheck()}
-              disabled={!symptomDraft.trim()}
-              className="w-full rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white disabled:opacity-40 dark:bg-[#0a84ff]"
-            >
-              {isZh ? "分析症状" : "Analyze symptoms"}
-            </button>
-            <div className="flex flex-wrap gap-2">
-              {quickSymptoms.map((symptom) => (
-                <button key={symptom} type="button" onClick={() => handleSymptomCheck(symptom)}
-                  className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition active:scale-95 dark:bg-blue-950/40 dark:text-blue-300">
-                  {symptom}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
+            {activeTool === "symptom" && (
+              <textarea
+                rows={3}
+                value={symptomDraft}
+                onChange={(e) => setSymptomDraft(e.target.value)}
+                placeholder={isZh ? "描述症状、持续多久、年龄和基础病" : "Describe symptoms, duration, age, and conditions"}
+                className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-base text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-500 dark:border-[#3a3a3c] dark:bg-[#2c2c2e] dark:text-white"
+              />
+            )}
 
-        {activeTool === "pill" && (
-          <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-[#3a3a3c] dark:bg-[#2c2c2e]">
-            <p className="text-sm font-semibold text-slate-900 dark:text-white">
-              {isZh ? "不知道手里的药片是什么？" : "Not sure what a pill is?"}
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-[#8e8e93]">
-              {isZh ? "用颜色、形状、印字和剂量线索快速缩小范围。" : "Use color, shape, imprint, and strength clues to narrow it down."}
-            </p>
-            <button
-              type="button"
-              onClick={() => navigate("/identifier")}
-              className="mt-3 w-full rounded-2xl bg-slate-950 py-3 text-sm font-semibold text-white dark:bg-white dark:text-black"
-            >
-              {isZh ? "开始识别" : "Start identifying"}
-            </button>
+            {activeTool === "pill" && (
+              <input
+                value={pillDraft}
+                onChange={(e) => setPillDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handlePillIdentify(); }}
+                placeholder={isZh ? "可输入印字线索，比如 I2 或 44 183" : "Optional imprint, e.g. I2 or 44 183"}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-3 text-base text-slate-950 outline-none placeholder:text-slate-400 focus:border-blue-500 dark:border-[#3a3a3c] dark:bg-[#2c2c2e] dark:text-white"
+              />
+            )}
           </div>
-        )}
+
+          <button
+            type="button"
+            onClick={runActiveTool}
+            disabled={!activeCanRun}
+            className="mt-2 w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white transition disabled:opacity-40 dark:bg-[#0a84ff]"
+          >
+            {activeTool === "drug" && (isZh ? "搜索药品" : "Search medicine")}
+            {activeTool === "symptom" && (isZh ? "分析症状" : "Analyze symptoms")}
+            {activeTool === "pill" && (isZh ? "进入识别" : "Identify pill")}
+          </button>
+        </div>
+
+        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+          {(activeTool === "symptom" ? quickSymptoms : COMMON_SEARCHES).map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => activeTool === "symptom" ? handleSymptomCheck(item) : handleDrugSearch(item)}
+              className="shrink-0 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm dark:border-[#3a3a3c] dark:bg-[#1c1c1e] dark:text-[#c7c7cc]"
+            >
+              {item}
+            </button>
+          ))}
+        </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-3">
-        <button
-          type="button"
-          onClick={() => navigate("/safety")}
-          className="rounded-3xl bg-red-50 p-4 text-left shadow-sm transition active:scale-95 dark:bg-red-950/30"
-        >
-          <p className="text-sm font-bold text-red-800 dark:text-red-300">{isZh ? "紧急情况" : "Emergency"}</p>
-          <p className="mt-1 text-xs leading-relaxed text-red-700 dark:text-red-400">
-            {isZh ? "胸痛、呼吸困难、过量或中毒先求助。" : "Chest pain, breathing trouble, overdose, or poisoning."}
-          </p>
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowAddReminder(true)}
-          className="rounded-3xl bg-emerald-50 p-4 text-left shadow-sm transition active:scale-95 dark:bg-emerald-950/30"
-        >
-          <p className="text-sm font-bold text-emerald-800 dark:text-emerald-300">{isZh ? "加提醒" : "Add reminder"}</p>
-          <p className="mt-1 text-xs leading-relaxed text-emerald-700 dark:text-emerald-400">
-            {isZh ? "把常用药和时间放在首页。" : "Keep medicine timing close at hand."}
-          </p>
-        </button>
-      </section>
-
-      <section>
-        <h2 className="mb-3 px-1 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#636366]">
-          {isZh ? "按场景浏览" : "Browse by need"}
-        </h2>
+      <section className="mt-5">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#636366]">
+            {isZh ? "常用入口" : "Common needs"}
+          </h2>
+          <button type="button" onClick={() => navigate("/safety")} className="text-xs font-semibold text-red-600 dark:text-red-400">
+            {isZh ? "急救信息" : "Emergency info"}
+          </button>
+        </div>
         <div className="grid grid-cols-4 gap-2">
-          {CATEGORIES.map(({ cat, icon }) => (
-            <button key={cat} type="button" onClick={() => handleCategory(cat)}
-              className="flex min-h-[76px] flex-col items-center justify-center gap-1.5 rounded-2xl bg-white p-2 shadow-sm transition active:scale-95 dark:bg-[#1c1c1e]">
-              <span className="text-[11px] font-bold text-blue-600 dark:text-[#0a84ff]">{icon}</span>
-              <span className="text-center text-[10px] font-medium leading-tight text-slate-600 dark:text-[#8e8e93]">
+          {CATEGORIES.map(({ cat, shortZh, shortEn }) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => { setActiveCategory(cat); navigate("/drugs"); }}
+              className="min-h-[72px] rounded-2xl border border-slate-200 bg-white px-2 py-3 text-center shadow-sm transition active:scale-95 dark:border-[#2c2c2e] dark:bg-[#1c1c1e]"
+            >
+              <p className="text-sm font-bold text-slate-900 dark:text-white">{isZh ? shortZh : shortEn}</p>
+              <p className="mt-1 text-[10px] leading-tight text-slate-400 dark:text-[#636366]">
                 {isZh ? DRUG_CATEGORY_ZH[cat] : cat}
-              </span>
+              </p>
             </button>
           ))}
         </div>
       </section>
 
       {reminders.length > 0 && (
-        <section>
-          <div className="mb-3 flex items-center justify-between px-1">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#636366]">
-              {t.reminders.title}
-            </h2>
-            <button type="button" onClick={() => setShowAddReminder(true)}
-              className="text-sm font-semibold text-blue-600 dark:text-[#0a84ff]">
-              {t.reminders.add}
-            </button>
+        <section className="mt-5">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#636366]">{t.reminders.title}</h2>
+            <button type="button" onClick={() => setShowAddReminder(true)} className="text-xs font-semibold text-blue-600 dark:text-[#0a84ff]">{t.reminders.add}</button>
           </div>
-          <div className="rounded-2xl bg-white shadow-sm dark:bg-[#1c1c1e]">
-            <ul className="divide-y divide-slate-100 dark:divide-[#2c2c2e]">
-              {reminders.slice(0, 3).map((r, i) => (
-                <li key={r.id} className={`flex items-center gap-3 px-4 py-3 ${i === 0 ? "rounded-t-2xl" : ""} ${i === reminders.length - 1 ? "rounded-b-2xl" : ""}`}>
-                  <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-blue-50 text-xs font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
-                    {formatTime(r.time).split(" ")[1]}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{r.drugName}</p>
-                    <p className="text-xs text-slate-400 dark:text-[#636366]">
-                      {r.dosage ? `${r.dosage} · ` : ""}{t.reminders.daily} {formatTime(r.time)}
-                    </p>
-                  </div>
-                  <button type="button" onClick={() => removeReminder(r.id)}
-                    className="flex-shrink-0 text-slate-300 transition hover:text-red-400 dark:text-[#3a3a3c] dark:hover:text-red-500"
-                    aria-label={t.reminders.delete}>
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <div className="divide-y divide-slate-100 rounded-2xl border border-slate-200 bg-white shadow-sm dark:divide-[#2c2c2e] dark:border-[#2c2c2e] dark:bg-[#1c1c1e]">
+            {reminders.slice(0, 3).map((r) => (
+              <div key={r.id} className="flex items-center gap-3 px-4 py-3">
+                <div className="w-16 text-xs font-semibold text-slate-500 dark:text-[#8e8e93]">{formatTime(r.time)}</div>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{r.drugName}</p>
+                  {r.dosage && <p className="text-xs text-slate-400 dark:text-[#636366]">{r.dosage}</p>}
+                </div>
+                <button type="button" onClick={() => removeReminder(r.id)} aria-label={t.reminders.delete} className="text-slate-300 hover:text-red-400 dark:text-[#3a3a3c]">
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
           </div>
         </section>
       )}
 
       {favoriteDrugs.length > 0 && (
-        <section>
-          <div className="mb-3 flex items-center justify-between px-1">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#636366]">
-              {t.favorites.title}
-            </h2>
-            <button type="button" onClick={() => navigate("/drugs")} className="text-xs font-medium text-blue-600 dark:text-[#0a84ff]">
-              {t.favorites.viewAll}
-            </button>
+        <section className="mt-5">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#636366]">{t.favorites.title}</h2>
+            <button type="button" onClick={() => navigate("/drugs")} className="text-xs font-semibold text-blue-600 dark:text-[#0a84ff]">{t.favorites.viewAll}</button>
           </div>
           <div className="space-y-3">
             {favoriteDrugs.slice(0, 2).map((drug) => drug && (
@@ -334,14 +302,10 @@ export function HomePage() {
       )}
 
       {recentlyViewed.length > 0 && (
-        <section>
-          <div className="mb-3 flex items-center justify-between px-1">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#636366]">
-              {t.home.recentlyViewed}
-            </h2>
-            <button type="button" onClick={() => navigate("/drugs")} className="text-xs font-medium text-blue-600 dark:text-[#0a84ff]">
-              {t.home.viewAll}
-            </button>
+        <section className="mt-5">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-[#636366]">{t.home.recentlyViewed}</h2>
+            <button type="button" onClick={() => navigate("/drugs")} className="text-xs font-semibold text-blue-600 dark:text-[#0a84ff]">{t.home.viewAll}</button>
           </div>
           <div className="space-y-3">
             {recentlyViewed.slice(0, 2).map((drug) => (
@@ -351,7 +315,7 @@ export function HomePage() {
         </section>
       )}
 
-      <div className="h-2" />
+      <div className="h-4" />
 
       {showAddReminder && (
         <AddReminderSheet onClose={() => setShowAddReminder(false)} onAdd={addReminder} t={t} />
