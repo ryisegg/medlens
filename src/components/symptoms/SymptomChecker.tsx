@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import { getTranslations } from "../../i18n";
@@ -6,6 +6,7 @@ import { WarningBanner } from "../shared/WarningBanner";
 import { getMatchedRedFlagGroups } from "../../data/symptoms";
 import { getDrugById } from "../../data/drugs";
 import { translateDrugNameOnly, translateCategory } from "../../utils/medicalTranslation";
+import { fetchAiSymptomAdvice, type AiSymptomAdvice } from "../../services/aiSymptomAdvice";
 import type { SymptomSuggestion } from "../../types";
 import type { Translations } from "../../i18n";
 
@@ -82,6 +83,90 @@ function SymptomSuggestionCard({ suggestion, t, language }: SuggestionCardProps)
   );
 }
 
+function AiAdviceCard({ advice, language }: { advice: AiSymptomAdvice; language: string }) {
+  const isZh = language === "zh";
+
+  return (
+    <div className="rounded-2xl border border-blue-100 bg-white px-5 py-4 shadow-sm dark:border-blue-900/50 dark:bg-[#1c1c1e]">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-blue-500 dark:text-[#0a84ff]">
+            {isZh ? "AI 分诊增强" : "AI triage assist"}
+          </p>
+          <h3 className="mt-1 text-base font-semibold text-slate-900 dark:text-white">
+            {isZh ? "智能建议" : "Smart guidance"}
+          </h3>
+        </div>
+        <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300">
+          {isZh ? "测试版" : "Beta"}
+        </span>
+      </div>
+
+      <p className="text-sm leading-relaxed text-slate-700 dark:text-[#c7c7cc]">{advice.summary}</p>
+
+      {advice.redFlags.length > 0 && (
+        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-950/30">
+          <p className="text-xs font-bold text-red-700 dark:text-red-300">
+            {isZh ? "需要优先排除" : "Check these first"}
+          </p>
+          <ul className="mt-2 space-y-1 text-sm text-red-800 dark:text-red-300">
+            {advice.redFlags.map((item) => <li key={item}>• {item}</li>)}
+          </ul>
+        </div>
+      )}
+
+      {advice.otcCategories.length > 0 && (
+        <div className="mt-4 space-y-3">
+          {advice.otcCategories.map((category) => (
+            <div key={category.name} className="rounded-xl border border-slate-200 p-3 dark:border-[#3a3a3c]">
+              <h4 className="text-sm font-semibold text-slate-900 dark:text-white">{category.name}</h4>
+              {category.examples.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {category.examples.map((example) => (
+                    <span key={example} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-[#2c2c2e] dark:text-[#c7c7cc]">
+                      {example}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <p className="mt-2 text-sm text-slate-700 dark:text-[#c7c7cc]">{category.rationale}</p>
+              <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+                <strong>{isZh ? "避免/先问药师：" : "Avoid or ask first: "}</strong>{category.avoidIf}
+              </p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-[#8e8e93]">
+                <strong>{isZh ? "风险：" : "Risks: "}</strong>{category.keyRisks}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {(advice.selfCare.length > 0 || advice.askForMore.length > 0) && (
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          {advice.selfCare.length > 0 && (
+            <div className="rounded-xl bg-slate-50 p-3 dark:bg-[#2c2c2e]">
+              <p className="text-xs font-bold text-slate-600 dark:text-[#c7c7cc]">{isZh ? "自我护理" : "Self-care"}</p>
+              <ul className="mt-2 space-y-1 text-sm text-slate-700 dark:text-[#c7c7cc]">
+                {advice.selfCare.map((item) => <li key={item}>• {item}</li>)}
+              </ul>
+            </div>
+          )}
+          {advice.askForMore.length > 0 && (
+            <div className="rounded-xl bg-slate-50 p-3 dark:bg-[#2c2c2e]">
+              <p className="text-xs font-bold text-slate-600 dark:text-[#c7c7cc]">{isZh ? "还需要确认" : "Helpful details"}</p>
+              <ul className="mt-2 space-y-1 text-sm text-slate-700 dark:text-[#c7c7cc]">
+                {advice.askForMore.map((item) => <li key={item}>• {item}</li>)}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      <p className="mt-4 text-xs leading-relaxed text-slate-500 dark:text-[#8e8e93]">{advice.disclaimer}</p>
+    </div>
+  );
+}
+
 function NoSuggestionCard({ language }: { language: string }) {
   const isZh = language === "zh";
   return (
@@ -114,28 +199,66 @@ export function SymptomChecker() {
   const redFlagGroups = getMatchedRedFlagGroups(detectedRedFlags);
   const hasInput = selectedSymptoms.length > 0 || symptomInput.trim().length > 0;
   const [hasChecked, setHasChecked] = useState(false);
+  const [aiAdvice, setAiAdvice] = useState<AiSymptomAdvice | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  const runAiAdvice = useCallback(async () => {
+    if (!hasInput) {
+      setAiAdvice(null);
+      setAiError(null);
+      return;
+    }
+
+    const translatedChips = selectedSymptoms.map((chip) => (
+      (t.symptoms.chips as Record<string, string>)[chip] ?? chip
+    ));
+
+    setAiLoading(true);
+    setAiError(null);
+
+    try {
+      const advice = await fetchAiSymptomAdvice({
+        language,
+        freeText: symptomInput,
+        selectedSymptoms: translatedChips,
+      });
+      setAiAdvice(advice);
+    } catch (error) {
+      setAiAdvice(null);
+      setAiError(error instanceof Error ? error.message : "AI advice is unavailable.");
+    } finally {
+      setAiLoading(false);
+    }
+  }, [hasInput, language, selectedSymptoms, symptomInput, t.symptoms.chips]);
 
   useEffect(() => {
     if (!hasInput) {
       setHasChecked(false);
+      setAiAdvice(null);
+      setAiError(null);
       return;
     }
 
     const timer = window.setTimeout(() => {
       setHasChecked(true);
       runSymptomCheck();
+      void runAiAdvice();
     }, 650);
 
     return () => window.clearTimeout(timer);
-  }, [hasInput, symptomInput, selectedSymptoms, runSymptomCheck]);
+  }, [hasInput, symptomInput, selectedSymptoms, runSymptomCheck, runAiAdvice]);
 
   function handleCheck() {
     setHasChecked(true);
     runSymptomCheck();
+    void runAiAdvice();
   }
 
   function handleClear() {
     setHasChecked(false);
+    setAiAdvice(null);
+    setAiError(null);
     clearSelectedSymptoms();
   }
 
@@ -197,7 +320,7 @@ export function SymptomChecker() {
         </button>
         {hasInput && (
           <p className="mt-2 text-center text-xs text-slate-400 dark:text-[#636366]">
-            {isZh ? "输入后会自动分析，也可以手动点击按钮。" : "Suggestions update automatically; you can also tap the button."}
+            {isZh ? "输入后会自动分析；AI 后端配置后会同时生成智能建议。" : "Suggestions update automatically; AI guidance appears when the backend is configured."}
           </p>
         )}
       </div>
@@ -228,6 +351,24 @@ export function SymptomChecker() {
         </div>
       )}
 
+      {hasChecked && hasInput && detectedRedFlags.length === 0 && aiLoading && (
+        <div className="rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4 text-sm text-blue-800 shadow-sm dark:border-blue-900/40 dark:bg-blue-950/30 dark:text-blue-300">
+          {isZh ? "AI 正在分析症状..." : "AI is reviewing the symptoms..."}
+        </div>
+      )}
+
+      {hasChecked && hasInput && detectedRedFlags.length === 0 && aiAdvice && (
+        <AiAdviceCard advice={aiAdvice} language={language} />
+      )}
+
+      {hasChecked && hasInput && detectedRedFlags.length === 0 && aiError && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800 shadow-sm dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+          {isZh
+            ? `AI 后端暂时不可用，正在显示本地建议。${aiError}`
+            : `AI backend is unavailable, so local guidance is shown. ${aiError}`}
+        </div>
+      )}
+
       {detectedRedFlags.length === 0 && symptomSuggestions.length > 0 && (
         <div className="space-y-3">
           <p className="px-1 text-sm font-semibold text-slate-700 dark:text-white">{t.symptoms.results}</p>
@@ -237,7 +378,7 @@ export function SymptomChecker() {
         </div>
       )}
 
-      {hasChecked && hasInput && detectedRedFlags.length === 0 && symptomSuggestions.length === 0 && (
+      {hasChecked && hasInput && detectedRedFlags.length === 0 && symptomSuggestions.length === 0 && !aiAdvice && (
         <NoSuggestionCard language={language} />
       )}
     </div>
