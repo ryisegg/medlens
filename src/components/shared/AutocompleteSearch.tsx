@@ -56,12 +56,10 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
   const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(-1);
   const [debouncedValue, setDebouncedValue] = useState(value);
-  // Track the query at which the user explicitly closed the dropdown
   const [closedAtQuery, setClosedAtQuery] = useState<string>("");
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Debounce the API query
   useEffect(() => {
     const t = setTimeout(() => setDebouncedValue(value), 300);
     return () => clearTimeout(t);
@@ -70,7 +68,6 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
   const trimmed = debouncedValue.trim();
   const inputTrimmed = value.trim();
 
-  // Live RxNorm search via React Query
   const { data: liveHits = [], isPending: liveLoading } = useQuery({
     queryKey: ["rxnorm", trimmed],
     queryFn: () => searchRxNorm(trimmed),
@@ -78,21 +75,18 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
     staleTime: 6 * 60 * 60 * 1000,
   });
 
-  // Client-side local drug matches (instant)
   const localMatches: Drug[] = inputTrimmed.length >= 2
     ? searchDrugs(value.trim()).slice(0, 3)
     : [];
 
-  // Deduplicate local vs live
   const localNames = new Set(localMatches.map((d) => d.name.toLowerCase()));
-  const filteredLive = liveHits.filter((r) => !localNames.has(r.name.toLowerCase())).slice(0, 6);
+  const filteredLive = liveHits.filter((r) => !localNames.has(r.name.toLowerCase())).slice(0, 5);
 
   const hits: Hit[] = [
     ...localMatches.map((drug): LocalHit => ({ kind: "local", drug })),
     ...filteredLive.map((result): LiveHit => ({ kind: "live", result })),
   ];
 
-  // Spelling suggestions when empty
   const noResults = !liveLoading && hits.length === 0 && trimmed.length >= 3 && trimmed === inputTrimmed;
 
   const { data: spellingSuggestions = [] } = useQuery({
@@ -102,8 +96,6 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
     staleTime: 60 * 60 * 1000,
   });
 
-  // Derive isOpen without useState/useEffect:
-  // Open when there's content AND user hasn't closed at this exact query
   const hasContent = hits.length > 0 || liveLoading || spellingSuggestions.length > 0;
   const isOpen = hasContent && inputTrimmed.length >= 2 && inputTrimmed !== closedAtQuery;
 
@@ -112,7 +104,6 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
     setActiveIndex(-1);
   }, [value]);
 
-  // Close on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -130,31 +121,35 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
   }, [navigate, value]);
 
   function handleChange(v: string) {
-    // Reopen dropdown when user types (by clearing closedAtQuery)
     setClosedAtQuery("");
     setActiveIndex(-1);
     onChange(v);
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!isOpen) {
-      if (e.key === "ArrowDown") { setClosedAtQuery(""); }
+  function submitFirstHit() {
+    if (hits.length > 0) {
+      const selected = activeIndex >= 0 && activeIndex < hits.length ? hits[activeIndex] : hits[0];
+      selectHit(hitPath(selected));
       return;
     }
+    closeDropdown();
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     switch (e.key) {
       case "ArrowDown":
+        if (!isOpen) setClosedAtQuery("");
         e.preventDefault();
-        setActiveIndex((i) => Math.min(i + 1, hits.length - 1));
+        setActiveIndex((i) => Math.min(i + 1, Math.max(hits.length - 1, 0)));
         break;
       case "ArrowUp":
+        if (!isOpen) return;
         e.preventDefault();
         setActiveIndex((i) => Math.max(i - 1, -1));
         break;
       case "Enter":
         e.preventDefault();
-        if (activeIndex >= 0 && activeIndex < hits.length) {
-          selectHit(hitPath(hits[activeIndex]));
-        }
+        submitFirstHit();
         break;
       case "Escape":
         closeDropdown();
@@ -165,11 +160,11 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
-      {/* Input */}
       <div className="relative">
         <svg
           className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-[#636366] pointer-events-none"
           fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+          aria-hidden="true"
         >
           <circle cx="11" cy="11" r="8" />
           <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35" />
@@ -177,7 +172,7 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
 
         <input
           ref={inputRef}
-          type="search"
+          type="text"
           value={value}
           onChange={(e) => handleChange(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -197,21 +192,21 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
           <button
             type="button"
             onClick={() => { handleChange(""); inputRef.current?.focus(); }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full bg-slate-200 text-slate-500 dark:bg-[#3a3a3c] dark:text-[#8e8e93]"
+            className="absolute right-3 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-slate-200 text-slate-500 transition hover:bg-slate-300 dark:bg-[#3a3a3c] dark:text-[#8e8e93]"
             aria-label="Clear search"
+            title="Clear search"
           >
-            <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         )}
       </div>
 
-      {/* Dropdown */}
       {isOpen && (
         <div
           role="listbox"
-          className="absolute left-0 right-0 top-full z-50 mt-1.5 overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/5 dark:bg-[#1c1c1e] dark:ring-white/10"
+          className="absolute left-0 right-0 top-full z-50 mt-1.5 max-h-[46vh] overflow-y-auto rounded-2xl bg-white shadow-xl ring-1 ring-black/5 dark:bg-[#1c1c1e] dark:ring-white/10"
         >
           {liveLoading && hits.length === 0 && <DropdownSkeleton />}
 
@@ -247,7 +242,6 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
             );
           })}
 
-          {/* Spelling suggestions */}
           {!liveLoading && hits.length === 0 && spellingSuggestions.length > 0 && (
             <div className="px-4 py-3">
               <p className="mb-2 text-xs font-semibold text-slate-400 dark:text-[#636366]">Did you mean?</p>
@@ -266,7 +260,6 @@ export function AutocompleteSearch({ value, onChange, placeholder, autoFocus, cl
             </div>
           )}
 
-          {/* Empty state */}
           {!liveLoading && hits.length === 0 && spellingSuggestions.length === 0 && trimmed === inputTrimmed && trimmed.length >= 2 && (
             <div className="px-4 py-5 text-center">
               <p className="text-sm font-medium text-slate-500 dark:text-[#8e8e93]">No medications found</p>
