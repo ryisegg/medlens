@@ -1,4 +1,5 @@
 import type { RxNormHit, ApiSearchResult } from "../types/api";
+import { getApiUrl, fetchJson } from "./apiClient";
 import { cacheGet, cacheSet } from "./cache";
 
 const BASE = "https://rxnav.nlm.nih.gov/REST";
@@ -12,22 +13,14 @@ interface RxNormDrugsResponse {
   };
 }
 
-export async function searchRxNorm(query: string): Promise<ApiSearchResult[]> {
-  const q = query.trim();
-  if (!q) return [];
+interface BackendDrugSearchResponse {
+  results?: ApiSearchResult[];
+}
 
-  const cacheKey = `rxnorm_search_${q.toLowerCase()}`;
-  const cached = cacheGet<ApiSearchResult[]>(cacheKey);
-  if (cached) return cached;
-
-  const url = `${BASE}/drugs.json?name=${encodeURIComponent(q)}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`RxNorm error ${res.status}`);
-
-  const json: RxNormDrugsResponse = await res.json();
+function normalizeRxNormResults(json: RxNormDrugsResponse): ApiSearchResult[] {
   const results: ApiSearchResult[] = [];
-
   const groups = json.drugGroup?.conceptGroup ?? [];
+
   for (const group of groups) {
     for (const concept of group.conceptProperties ?? []) {
       // Only keep top-level types: brand (SBD/SBN), generic (SCD/GPCK), ingredient (IN/MIN)
@@ -42,16 +35,43 @@ export async function searchRxNorm(query: string): Promise<ApiSearchResult[]> {
     }
   }
 
-  // De-duplicate by rxcui, limit to 20
   const seen = new Set<string>();
-  const deduped = results.filter((r) => {
+  return results.filter((r) => {
     if (seen.has(r.rxcui)) return false;
     seen.add(r.rxcui);
     return true;
   }).slice(0, 20);
+}
 
-  cacheSet(cacheKey, deduped, 6 * 60 * 60 * 1000); // 6-hour cache for search
-  return deduped;
+async function searchRxNormDirect(q: string): Promise<ApiSearchResult[]> {
+  const url = `${BASE}/drugs.json?name=${encodeURIComponent(q)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`RxNorm error ${res.status}`);
+
+  const json: RxNormDrugsResponse = await res.json();
+  return normalizeRxNormResults(json);
+}
+
+export async function searchRxNorm(query: string): Promise<ApiSearchResult[]> {
+  const q = query.trim();
+  if (!q) return [];
+
+  const cacheKey = `rxnorm_search_${q.toLowerCase()}`;
+  const cached = cacheGet<ApiSearchResult[]>(cacheKey);
+  if (cached) return cached;
+
+  const backendUrl = getApiUrl(`/api/drug-search?q=${encodeURIComponent(q)}`);
+
+  let results: ApiSearchResult[];
+  try {
+    const data = await fetchJson<BackendDrugSearchResponse>(backendUrl);
+    results = data.results ?? [];
+  } catch {
+    results = await searchRxNormDirect(q);
+  }
+
+  cacheSet(cacheKey, results, 6 * 60 * 60 * 1000); // 6-hour cache for search
+  return results;
 }
 
 interface SpellingSuggestionResponse {
