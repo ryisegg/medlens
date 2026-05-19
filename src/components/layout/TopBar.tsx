@@ -2,6 +2,21 @@ import { useApp } from "../../context/AppContext";
 import { getTranslations } from "../../i18n";
 import type { Language } from "../../types";
 
+function LogoMark() {
+  return (
+    <span className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-cyan-500 to-emerald-400 shadow-sm shadow-blue-500/20 dark:from-[#0a84ff] dark:via-cyan-400 dark:to-emerald-300">
+      <span className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.9),transparent_32%)]" />
+      <svg className="relative h-6 w-6 text-white drop-shadow-sm" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <rect x="6" y="11" width="20" height="14" rx="5" fill="currentColor" fillOpacity="0.96" />
+        <path d="M11 11V8.8C11 7.25 12.25 6 13.8 6h4.4C19.75 6 21 7.25 21 8.8V11" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.9" />
+        <path d="M16 14.2v7.6M12.2 18h7.6" stroke="#0F766E" strokeWidth="2.4" strokeLinecap="round" />
+        <circle cx="22.5" cy="22.5" r="5" stroke="#0F172A" strokeWidth="2" fill="rgba(255,255,255,0.35)" />
+        <path d="M26 26l2.6 2.6" stroke="#0F172A" strokeWidth="2.2" strokeLinecap="round" />
+      </svg>
+    </span>
+  );
+}
+
 function MoonIcon() {
   return (
     <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -30,11 +45,14 @@ export function TopBar() {
       style={{ paddingTop: "env(safe-area-inset-top)" }}
     >
       <div className="flex h-12 items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 text-xs font-bold text-white dark:bg-[#0a84ff]">
-            {language === "zh" ? "药" : "M"}
-          </span>
-          <span className="text-base font-bold text-slate-950 dark:text-white">{brand}</span>
+        <div className="flex items-center gap-2.5">
+          <LogoMark />
+          <div className="leading-tight">
+            <span className="block text-base font-black text-slate-950 dark:text-white">{brand}</span>
+            <span className="block text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
+              MedLens
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
