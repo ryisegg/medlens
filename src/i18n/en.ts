@@ -1,6 +1,6 @@
 export const en = {
   appName: "MedLens",
-  tabs: { home: "Home", search: "Search", symptoms: "Symptoms", identifier: "Pill ID", calendar: "Calendar", cabinet: "Cabinet", safety: "Safety" },
+  tabs: { home: "Home", search: "Search", symptoms: "Symptoms", identifier: "Pill ID", safety: "Safety" },
   home: {
     heroTitle: "Know your medicine before you take it.",
     heroSubtitle: "Look up drugs, identify pills, and understand your symptoms — all in one place.",
