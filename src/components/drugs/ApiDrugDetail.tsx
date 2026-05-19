@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ApiDrugDetail } from "../../types/api";
 import { useApp } from "../../context/AppContext";
 import { getTranslations } from "../../i18n";
+import { analyzeDrugRisks } from "../../services/drugIntelligence";
+import { lookupZhDrug } from "../../data/zhDrugNames";
 
 interface Props { drug: ApiDrugDetail }
 
@@ -98,6 +100,18 @@ function WarningSection({ icon, title, text, accentClass }: {
   );
 }
 
+function IntelChip({ icon, label, sublabel, color }: { icon: string; label: string; sublabel?: string; color: string }) {
+  return (
+    <div className={`flex items-start gap-2 rounded-xl border px-3 py-2.5 ${color}`}>
+      <span className="text-base flex-shrink-0 mt-0.5">{icon}</span>
+      <div>
+        <p className="text-xs font-bold leading-tight">{label}</p>
+        {sublabel && <p className="mt-0.5 text-[11px] leading-snug opacity-80">{sublabel}</p>}
+      </div>
+    </div>
+  );
+}
+
 const SOURCE_LABEL: Record<ApiDrugDetail["source"], string> = {
   openFDA: "FDA Drug Label Database",
   DailyMed: "DailyMed (NLM / NIH)",
@@ -108,6 +122,12 @@ export function ApiDrugDetailView({ drug }: Props) {
   const navigate = useNavigate();
   const { language } = useApp();
   const t = getTranslations(language);
+
+  const risks = useMemo(() => analyzeDrugRisks(drug), [drug]);
+  const zhEntry = useMemo(() => lookupZhDrug(drug.genericName ?? drug.name), [drug.genericName, drug.name]);
+
+  const hasIntelWarnings =
+    risks.hasAlcoholWarning || risks.hasLiverWarning || risks.hasKidneyWarning || risks.hasDuplicateIngredientWarning;
 
   return (
     <div className="space-y-3 px-4 py-4">
@@ -131,12 +151,29 @@ export function ApiDrugDetailView({ drug }: Props) {
         </div>
 
         <h1 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">{drug.name}</h1>
+
+        {/* Bilingual name */}
+        {language === "zh" && zhEntry && (
+          <p className="mt-1 text-lg font-semibold text-blue-600 dark:text-[#0a84ff]">{zhEntry.genericZh}</p>
+        )}
+
         {drug.genericName && drug.genericName.toLowerCase() !== drug.name.toLowerCase() && (
           <p className="mt-0.5 text-sm text-slate-500 dark:text-[#8e8e93]">
             {t.drug.genericName}:{" "}
             <span className="font-medium text-slate-700 dark:text-white">{drug.genericName}</span>
+            {language === "zh" && zhEntry && (
+              <span className="ml-1.5 text-blue-500 dark:text-[#0a84ff]">({zhEntry.genericZh})</span>
+            )}
           </p>
         )}
+
+        {/* Chinese brand names */}
+        {language === "zh" && zhEntry?.brandZh && (
+          <p className="mt-0.5 text-sm text-slate-500 dark:text-[#8e8e93]">
+            常见品牌：<span className="font-medium text-slate-700 dark:text-white">{zhEntry.brandZh}</span>
+          </p>
+        )}
+
         {drug.brandNames.length > 0 && (
           <p className="mt-0.5 text-sm text-slate-500 dark:text-[#8e8e93]">
             {t.drug.brandNames}:{" "}
@@ -145,6 +182,14 @@ export function ApiDrugDetailView({ drug }: Props) {
             </span>
           </p>
         )}
+
+        {/* Category label in ZH */}
+        {language === "zh" && zhEntry?.categoryZh && (
+          <span className="mt-2 inline-block rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]">
+            {zhEntry.categoryZh}
+          </span>
+        )}
+
         {drug.description && (
           <p className="mt-3 text-sm leading-relaxed text-slate-700 dark:text-[#8e8e93]">{drug.description}</p>
         )}
@@ -156,6 +201,49 @@ export function ApiDrugDetailView({ drug }: Props) {
           ⚕️ {t.api.disclaimer}
         </p>
       </div>
+
+      {/* Intelligence warnings */}
+      {hasIntelWarnings && (
+        <div>
+          <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
+            {language === "zh" ? "风险提示" : "Risk Signals"}
+          </p>
+          <div className="grid grid-cols-1 gap-2">
+            {risks.hasDuplicateIngredientWarning && (
+              <IntelChip
+                icon="⚠️"
+                label={language === "zh" ? "重复成分警告" : "Duplicate Ingredient Warning"}
+                sublabel={risks.duplicateIngredientText}
+                color="border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-300"
+              />
+            )}
+            {risks.hasAlcoholWarning && (
+              <IntelChip
+                icon="🍺"
+                label={language === "zh" ? "避免饮酒" : "Alcohol Interaction"}
+                sublabel={language === "zh" ? "服用此药期间请勿饮酒，可能引发严重不良反应。" : risks.alcoholWarningText}
+                color="border-orange-200 bg-orange-50 text-orange-800 dark:border-orange-800 dark:bg-orange-950/30 dark:text-orange-300"
+              />
+            )}
+            {risks.hasLiverWarning && (
+              <IntelChip
+                icon="🫀"
+                label={language === "zh" ? "肝脏注意事项" : "Liver Caution"}
+                sublabel={language === "zh" ? "肝病患者服用前请咨询医生。" : risks.liverWarningText}
+                color="border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300"
+              />
+            )}
+            {risks.hasKidneyWarning && (
+              <IntelChip
+                icon="🫘"
+                label={language === "zh" ? "肾脏注意事项" : "Kidney Caution"}
+                sublabel={language === "zh" ? "肾病患者服用前请咨询医生。" : risks.kidneyWarningText}
+                color="border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300"
+              />
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Quick facts row */}
       {(drug.activeIngredients?.length || drug.dosageForms?.length) ? (

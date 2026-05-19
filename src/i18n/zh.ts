@@ -84,6 +84,9 @@ export const zh: Translations = {
       stomachPain: "胃痛", diarrhea: "腹泻", soreThroat: "咽痛",
       insomnia: "失眠", nausea: "恶心", rash: "皮疹/瘙痒",
       runnyNose: "流鼻涕", bodyAche: "全身酸痛",
+      backPain: "背痛", jointPain: "关节痛", constipation: "便秘",
+      eyeIrritation: "眼部不适", periodPain: "经期疼痛", toothache: "牙痛",
+      anxiety: "焦虑/压力", fatigue: "疲劳乏力",
     },
   },
   identifier: {

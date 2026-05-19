@@ -6,13 +6,13 @@ import { DrugCard } from "../components/shared/DrugCard";
 import { getDrugById } from "../data/drugs";
 import type { DrugCategory } from "../types";
 
-const COMMON_SEARCHES = ["Ibuprofen", "Tylenol", "Benadryl", "Aspirin", "Metformin"];
+const COMMON_SEARCHES = ["Ibuprofen", "Tylenol", "Benadryl", "Aspirin", "Metformin", "Lisinopril"];
 
 const QUICK_ACTIONS = [
-  { key: "searchDrug",    to: "/drugs",      icon: "💊", bg: "bg-blue-50 dark:bg-blue-950/40",    iconBg: "bg-blue-100 dark:bg-blue-900/50",    iconText: "text-blue-600 dark:text-[#0a84ff]" },
-  { key: "identifyPill",  to: "/identifier", icon: "🔍", bg: "bg-green-50 dark:bg-green-950/40",  iconBg: "bg-green-100 dark:bg-green-900/50",  iconText: "text-green-600 dark:text-green-400" },
-  { key: "checkSymptoms", to: "/symptoms",   icon: "🩺", bg: "bg-purple-50 dark:bg-purple-950/40",iconBg: "bg-purple-100 dark:bg-purple-900/50",iconText: "text-purple-600 dark:text-purple-400" },
-  { key: "safetyInfo",    to: "/safety",     icon: "🛡️", bg: "bg-orange-50 dark:bg-orange-950/40",iconBg: "bg-orange-100 dark:bg-orange-900/50",iconText: "text-orange-600 dark:text-orange-400" },
+  { key: "searchDrug",    to: "/drugs",      icon: "💊", bg: "bg-blue-50 dark:bg-blue-950/40",    iconBg: "bg-blue-100 dark:bg-blue-900/50" },
+  { key: "identifyPill",  to: "/identifier", icon: "🔍", bg: "bg-green-50 dark:bg-green-950/40",  iconBg: "bg-green-100 dark:bg-green-900/50" },
+  { key: "checkSymptoms", to: "/symptoms",   icon: "🩺", bg: "bg-purple-50 dark:bg-purple-950/40",iconBg: "bg-purple-100 dark:bg-purple-900/50" },
+  { key: "safetyInfo",    to: "/safety",     icon: "🛡️", bg: "bg-orange-50 dark:bg-orange-950/40",iconBg: "bg-orange-100 dark:bg-orange-900/50" },
 ] as const;
 
 const CATEGORIES: { cat: DrugCategory; icon: string }[] = [
@@ -20,6 +20,12 @@ const CATEGORIES: { cat: DrugCategory; icon: string }[] = [
   { cat: "Cold & Flu", icon: "🤧" }, { cat: "Digestive Health", icon: "🫁" },
   { cat: "Skin", icon: "🧴" }, { cat: "Sleep", icon: "🌙" },
   { cat: "Vitamins", icon: "⭐" }, { cat: "Chronic Conditions", icon: "🏥" },
+];
+
+const STAT_CARDS = [
+  { value: "500+", labelEn: "Medications", labelZh: "药品收录" },
+  { value: "3", labelEn: "FDA Databases", labelZh: "FDA数据库" },
+  { value: "EN/ZH", labelEn: "Bilingual", labelZh: "双语支持" },
 ];
 
 function translateCategory(cat: string): string {
@@ -38,7 +44,6 @@ function formatTime(time: string): string {
   return `${hour}:${String(m).padStart(2, "0")} ${period}`;
 }
 
-// ── Add Reminder Sheet ───────────────────────────────────────────────────────
 interface AddReminderSheetProps {
   onClose: () => void;
   onAdd: (data: { drugName: string; dosage: string; time: string }) => void;
@@ -56,64 +61,38 @@ function AddReminderSheet({ onClose, onAdd, t }: AddReminderSheetProps) {
     <div className="fixed inset-0 z-50 flex items-end">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full rounded-t-3xl bg-white px-6 pt-5 pb-8 shadow-2xl dark:bg-[#1c1c1e]">
-        {/* Handle */}
         <div className="mx-auto mb-4 h-1 w-12 rounded-full bg-slate-200 dark:bg-[#3a3a3c]" />
-
         <h2 className="mb-4 text-lg font-bold text-slate-900 dark:text-white">{t.reminders.add}</h2>
-
         <div className="space-y-3">
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide dark:text-[#8e8e93]">
               {t.reminders.drugName}
             </label>
-            <input
-              type="text"
-              value={drugName}
-              onChange={(e) => setDrugName(e.target.value)}
-              placeholder={t.reminders.drugNamePlaceholder}
-              className={inputClass}
-              autoFocus
-            />
+            <input type="text" value={drugName} onChange={(e) => setDrugName(e.target.value)}
+              placeholder={t.reminders.drugNamePlaceholder} className={inputClass} autoFocus />
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide dark:text-[#8e8e93]">
               {t.reminders.dosage}
             </label>
-            <input
-              type="text"
-              value={dosage}
-              onChange={(e) => setDosage(e.target.value)}
-              placeholder={t.reminders.dosagePlaceholder}
-              className={inputClass}
-            />
+            <input type="text" value={dosage} onChange={(e) => setDosage(e.target.value)}
+              placeholder={t.reminders.dosagePlaceholder} className={inputClass} />
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-500 uppercase tracking-wide dark:text-[#8e8e93]">
               {t.reminders.time}
             </label>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className={inputClass}
-            />
+            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={inputClass} />
           </div>
         </div>
-
         <div className="mt-5 flex gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 rounded-2xl border border-slate-200 py-3 text-sm font-semibold text-slate-600 dark:border-[#3a3a3c] dark:text-[#8e8e93]"
-          >
+          <button type="button" onClick={onClose}
+            className="flex-1 rounded-2xl border border-slate-200 py-3 text-sm font-semibold text-slate-600 dark:border-[#3a3a3c] dark:text-[#8e8e93]">
             {t.reminders.cancel}
           </button>
-          <button
-            type="button"
-            disabled={!drugName.trim()}
+          <button type="button" disabled={!drugName.trim()}
             onClick={() => { onAdd({ drugName: drugName.trim(), dosage: dosage.trim(), time }); onClose(); }}
-            className="flex-1 rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white disabled:opacity-40 dark:bg-[#0a84ff]"
-          >
+            className="flex-1 rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white disabled:opacity-40 dark:bg-[#0a84ff]">
             {t.reminders.save}
           </button>
         </div>
@@ -122,16 +101,12 @@ function AddReminderSheet({ onClose, onAdd, t }: AddReminderSheetProps) {
   );
 }
 
-// ── HomePage ─────────────────────────────────────────────────────────────────
 export function HomePage() {
   const navigate = useNavigate();
-  const {
-    language, setSearchQuery, setActiveCategory,
-    recentlyViewed, favorites,
-    reminders, addReminder, removeReminder,
-  } = useApp();
+  const { language, setSearchQuery, setActiveCategory, recentlyViewed, favorites, reminders, addReminder, removeReminder } = useApp();
   const t = getTranslations(language);
   const [showAddReminder, setShowAddReminder] = useState(false);
+  const isZh = language === "zh";
 
   useEffect(() => {
     document.title = t.appName;
@@ -153,13 +128,33 @@ export function HomePage() {
 
   return (
     <div className="space-y-4 px-4 py-4">
-      {/* Hero card — premium gradient */}
-      <div className="rounded-3xl bg-gradient-to-br from-blue-700 via-blue-600 to-teal-500 p-6 text-white shadow-lg">
-        <div className="mb-1 text-[10px] font-bold uppercase tracking-widest text-blue-200">
-          {t.appName}
+
+      {/* Hero — platform pitch */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-600 p-6 text-white shadow-lg">
+        {/* Decorative circles */}
+        <div className="pointer-events-none absolute -right-8 -top-8 h-36 w-36 rounded-full bg-white/5" />
+        <div className="pointer-events-none absolute -bottom-6 right-12 h-24 w-24 rounded-full bg-white/5" />
+
+        <div className="mb-1.5 flex items-center gap-1.5">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-blue-200">{t.appName}</span>
+          <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
+            {isZh ? "AI 驱动" : "AI-Powered"}
+          </span>
         </div>
+
         <h1 className="text-xl font-bold leading-snug">{t.home.heroTitle}</h1>
         <p className="mt-1.5 text-sm text-blue-100">{t.home.heroSubtitle}</p>
+
+        {/* Stats row */}
+        <div className="mt-4 flex gap-3">
+          {STAT_CARDS.map((s) => (
+            <div key={s.value} className="flex-1 rounded-2xl bg-white/15 px-2 py-2 text-center backdrop-blur-sm">
+              <p className="text-sm font-bold">{s.value}</p>
+              <p className="text-[10px] text-blue-200">{isZh ? s.labelZh : s.labelEn}</p>
+            </div>
+          ))}
+        </div>
+
         <button
           type="button"
           onClick={() => navigate("/drugs")}
@@ -170,6 +165,22 @@ export function HomePage() {
           </svg>
           {t.search.placeholder}
         </button>
+      </div>
+
+      {/* Trust indicators */}
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { icon: "🏛️", labelEn: "FDA Data", labelZh: "FDA数据" },
+          { icon: "🔒", labelEn: "No Login", labelZh: "无需登录" },
+          { icon: "🌐", labelEn: "EN + ZH", labelZh: "中英双语" },
+        ].map((item) => (
+          <div key={item.icon} className="flex flex-col items-center gap-1 rounded-2xl bg-white py-3 shadow-sm dark:bg-[#1c1c1e]">
+            <span className="text-xl">{item.icon}</span>
+            <span className="text-[11px] font-semibold text-slate-600 dark:text-[#8e8e93]">
+              {isZh ? item.labelZh : item.labelEn}
+            </span>
+          </div>
+        ))}
       </div>
 
       {/* Quick actions */}
@@ -189,8 +200,12 @@ export function HomePage() {
                 {icon}
               </div>
               <div>
-                <p className="text-sm font-semibold text-slate-800 dark:text-white">{t.home[key as keyof typeof t.home] as string}</p>
-                <p className="mt-0.5 text-xs text-slate-500 dark:text-[#8e8e93]">{t.home[`${key}Desc` as keyof typeof t.home] as string}</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-white">
+                  {t.home[key as keyof typeof t.home] as string}
+                </p>
+                <p className="mt-0.5 text-xs text-slate-500 dark:text-[#8e8e93]">
+                  {t.home[`${key}Desc` as keyof typeof t.home] as string}
+                </p>
               </div>
             </button>
           ))}
@@ -203,11 +218,8 @@ export function HomePage() {
           <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-widest dark:text-[#636366]">
             {t.reminders.title}
           </h2>
-          <button
-            type="button"
-            onClick={() => setShowAddReminder(true)}
-            className="text-sm font-semibold text-blue-600 dark:text-[#0a84ff]"
-          >
+          <button type="button" onClick={() => setShowAddReminder(true)}
+            className="text-sm font-semibold text-blue-600 dark:text-[#0a84ff]">
             {t.reminders.add}
           </button>
         </div>
@@ -229,12 +241,9 @@ export function HomePage() {
                       {r.dosage ? `${r.dosage} · ` : ""}{t.reminders.daily} {formatTime(r.time)}
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => removeReminder(r.id)}
+                  <button type="button" onClick={() => removeReminder(r.id)}
                     className="flex-shrink-0 text-slate-300 hover:text-red-400 transition dark:text-[#3a3a3c] dark:hover:text-red-500"
-                    aria-label={t.reminders.delete}
-                  >
+                    aria-label={t.reminders.delete}>
                     <svg className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -281,12 +290,8 @@ export function HomePage() {
         </h2>
         <div className="flex flex-wrap gap-2">
           {COMMON_SEARCHES.map((term) => (
-            <button
-              key={term}
-              type="button"
-              onClick={() => handleCommonSearch(term)}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700 active:scale-95 dark:border-[#3a3a3c] dark:bg-[#2c2c2e] dark:text-white"
-            >
+            <button key={term} type="button" onClick={() => handleCommonSearch(term)}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-blue-300 hover:text-blue-700 active:scale-95 dark:border-[#3a3a3c] dark:bg-[#2c2c2e] dark:text-white">
               {term}
             </button>
           ))}
@@ -321,19 +326,15 @@ export function HomePage() {
       {/* Browse by category */}
       <section>
         <h2 className="mb-3 px-1 text-xs font-semibold text-slate-500 uppercase tracking-widest dark:text-[#636366]">
-          {language === "en" ? "Browse by Category" : "按类别浏览"}
+          {isZh ? "按类别浏览" : "Browse by Category"}
         </h2>
         <div className="grid grid-cols-4 gap-2">
           {CATEGORIES.map(({ cat, icon }) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={() => handleCategory(cat)}
-              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white p-3 shadow-sm transition active:scale-95 dark:bg-[#1c1c1e]"
-            >
+            <button key={cat} type="button" onClick={() => handleCategory(cat)}
+              className="flex flex-col items-center gap-1.5 rounded-2xl bg-white p-3 shadow-sm transition active:scale-95 dark:bg-[#1c1c1e]">
               <span className="text-2xl">{icon}</span>
               <span className="text-center text-[10px] font-medium leading-tight text-slate-600 dark:text-[#8e8e93]">
-                {language === "en" ? cat : translateCategory(cat)}
+                {isZh ? translateCategory(cat) : cat}
               </span>
             </button>
           ))}
@@ -347,21 +348,26 @@ export function HomePage() {
           <div>
             <p className="text-sm font-bold text-red-800 dark:text-red-300">{t.home.emergency}</p>
             <p className="mt-1 text-xs text-red-700 dark:text-red-400">{t.home.emergencyDesc}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <span className="rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-bold text-red-800 dark:bg-red-900/40 dark:text-red-300">
+                📞 911
+              </span>
+              <span className="rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-bold text-red-800 dark:bg-red-900/40 dark:text-red-300">
+                ☎ Poison Control: 1-800-222-1222
+              </span>
+              <span className="rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-bold text-red-800 dark:bg-red-900/40 dark:text-red-300">
+                💬 Crisis: 988
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="h-2" />
 
-      {/* Add Reminder Sheet */}
       {showAddReminder && (
-        <AddReminderSheet
-          onClose={() => setShowAddReminder(false)}
-          onAdd={addReminder}
-          t={t}
-        />
+        <AddReminderSheet onClose={() => setShowAddReminder(false)} onAdd={addReminder} t={t} />
       )}
-
     </div>
   );
 }

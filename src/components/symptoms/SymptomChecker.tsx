@@ -10,13 +10,16 @@ import type { Translations } from "../../i18n";
 const CHIPS = [
   "fever", "headache", "cough", "allergy", "stomachPain",
   "diarrhea", "soreThroat", "insomnia", "nausea", "rash",
-  "runnyNose", "bodyAche",
+  "runnyNose", "bodyAche", "backPain", "jointPain", "constipation",
+  "eyeIrritation", "periodPain", "toothache", "anxiety", "fatigue",
 ] as const;
 
 const CHIP_ICONS: Record<string, string> = {
   fever: "🌡️", headache: "🤕", cough: "😮‍💨", allergy: "🤧",
   stomachPain: "🫁", diarrhea: "💧", soreThroat: "🗣️", insomnia: "😴",
   nausea: "🤢", rash: "🧴", runnyNose: "💨", bodyAche: "💪",
+  backPain: "🦴", jointPain: "🦵", constipation: "🫙", eyeIrritation: "👁️",
+  periodPain: "🩸", toothache: "🦷", anxiety: "😰", fatigue: "😓",
 };
 
 interface SuggestionCardProps {

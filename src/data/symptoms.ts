@@ -396,6 +396,214 @@ export const SYMPTOM_MAPPINGS: SymptomMapping[] = [
       },
     ],
   },
+  {
+    symptomKeywords: ["back pain", "backache", "lower back", "back ache", "lumbar"],
+    suggestions: [
+      {
+        categoryName: "NSAIDs for Back Pain",
+        exampleDrugs: ["ibuprofen", "naproxen"],
+        whyItHelps:
+          "NSAIDs reduce the inflammation around spinal muscles and discs, providing better relief than acetaminophen for most mechanical back pain.",
+        whoShouldAvoid:
+          "People with stomach ulcers, kidney disease, or on blood thinners.",
+        keyRisks:
+          "Limit use to 10 days. For chronic back pain, physical therapy is more effective long-term.",
+        whenToSeekCare:
+          "Back pain with leg numbness or weakness, loss of bladder/bowel control, or pain following trauma — go to emergency.",
+      },
+      {
+        categoryName: "Muscle Relaxants (Rx)",
+        exampleDrugs: [],
+        whyItHelps:
+          "Prescription muscle relaxants (cyclobenzaprine, methocarbamol) reduce muscle spasm. OTC options don't exist — ask your doctor.",
+        whoShouldAvoid:
+          "Elderly patients (fall/sedation risk). Not for use with alcohol.",
+        keyRisks:
+          "These are prescription-only. Do not obtain without a prescription.",
+        whenToSeekCare:
+          "Acute severe back spasm lasting more than 3–4 days without improvement.",
+      },
+    ],
+  },
+  {
+    symptomKeywords: ["constipation", "can't poop", "hard stool", "no bowel movement", "bloating constipated"],
+    suggestions: [
+      {
+        categoryName: "Osmotic Laxatives",
+        exampleDrugs: ["polyethylene glycol"],
+        whyItHelps:
+          "Polyethylene glycol (MiraLax) draws water into the colon to soften stool. Works within 1–3 days without causing dependency.",
+        whoShouldAvoid:
+          "Not for long-term use without medical evaluation. People with kidney disease should consult a doctor.",
+        keyRisks:
+          "Overuse can cause electrolyte imbalance. Drink plenty of fluids.",
+        whenToSeekCare:
+          "No bowel movement for more than 1 week, severe abdominal pain, or blood in stool.",
+      },
+      {
+        categoryName: "Fiber Supplements",
+        exampleDrugs: [],
+        whyItHelps:
+          "Psyllium husk (Metamucil) adds bulk to stool and supports gut health. Safe for long-term use.",
+        whoShouldAvoid:
+          "Take with plenty of water — dry ingestion can cause choking or esophageal blockage.",
+        keyRisks:
+          "May reduce absorption of some medications if taken at same time. Take 2 hours apart from other drugs.",
+        whenToSeekCare:
+          "Persistent constipation despite fiber and hydration warrants a medical visit.",
+      },
+    ],
+  },
+  {
+    symptomKeywords: ["joint pain", "joint ache", "arthritis", "knee pain", "hip pain", "swollen joint"],
+    suggestions: [
+      {
+        categoryName: "NSAIDs for Joint Pain",
+        exampleDrugs: ["ibuprofen", "naproxen"],
+        whyItHelps:
+          "Anti-inflammatory drugs reduce swelling and pain in arthritic and overuse joint injuries more effectively than plain acetaminophen.",
+        whoShouldAvoid:
+          "Avoid in kidney disease, GI bleeding, or if on blood thinners.",
+        keyRisks:
+          "Long-term NSAID use increases risk of GI bleeding and kidney damage. Use lowest effective dose.",
+        whenToSeekCare:
+          "Sudden severe joint pain with swelling and fever (could be gout or infection), or joint pain after injury.",
+      },
+      {
+        categoryName: "Glucosamine / Chondroitin",
+        exampleDrugs: [],
+        whyItHelps:
+          "These supplements may help maintain cartilage in mild osteoarthritis — evidence is modest but side effects are minimal.",
+        whoShouldAvoid:
+          "People with shellfish allergy (glucosamine is often shellfish-derived). Blood thinner users should check with doctor.",
+        keyRisks:
+          "May take 2–4 months to notice benefit. Not proven to work for all people.",
+        whenToSeekCare:
+          "Significant joint limitation, pain that wakes you from sleep, or rapidly worsening arthritis.",
+      },
+    ],
+  },
+  {
+    symptomKeywords: ["eye irritation", "red eye", "dry eye", "itchy eye", "burning eye", "watery eye"],
+    suggestions: [
+      {
+        categoryName: "Artificial Tears / Lubricating Eye Drops",
+        exampleDrugs: [],
+        whyItHelps:
+          "OTC artificial tears (Systane, Refresh) lubricate the eye surface and relieve dryness and mild irritation.",
+        whoShouldAvoid:
+          "Avoid drops with vasoconstrictors (e.g., Visine) for chronic use — they cause rebound redness.",
+        keyRisks:
+          "Preservative-free single-use vials are better for frequent users (more than 4x/day).",
+        whenToSeekCare:
+          "Eye pain (not just irritation), vision changes, discharge with crusting, or redness that doesn't resolve in 48 hours.",
+      },
+      {
+        categoryName: "OTC Antihistamine Eye Drops",
+        exampleDrugs: [],
+        whyItHelps:
+          "Ketotifen (Zaditor, Alaway) relieves allergic eye symptoms — itching, redness, and watering from pollen or pet dander.",
+        whoShouldAvoid:
+          "Contact lens wearers: remove lenses before use, wait 10 minutes before reinserting.",
+        keyRisks:
+          "Only for allergic causes — won't help dry eye or infections.",
+        whenToSeekCare:
+          "Eye discharge (pus/mucus), light sensitivity, or pain — may be conjunctivitis needing prescription treatment.",
+      },
+    ],
+  },
+  {
+    symptomKeywords: ["period pain", "menstrual cramp", "cramps", "dysmenorrhea", "pms", "period"],
+    suggestions: [
+      {
+        categoryName: "NSAIDs for Menstrual Pain",
+        exampleDrugs: ["ibuprofen", "naproxen"],
+        whyItHelps:
+          "NSAIDs block prostaglandins — the hormones that cause uterine cramping. More effective than acetaminophen for menstrual cramps. Start taking 1–2 days before expected period for best results.",
+        whoShouldAvoid:
+          "People with stomach ulcers, kidney disease, or on blood thinners.",
+        keyRisks:
+          "Take with food. Maximum recommended doses: ibuprofen 400–600 mg every 6–8 hours, naproxen 500 mg twice daily.",
+        whenToSeekCare:
+          "Severe pain that is new or worsening, pain between periods, or pelvic pain — could indicate endometriosis or other conditions.",
+      },
+    ],
+  },
+  {
+    symptomKeywords: ["toothache", "tooth pain", "dental pain", "gum pain", "jaw pain", "tooth ache"],
+    suggestions: [
+      {
+        categoryName: "OTC Pain Relievers for Dental Pain",
+        exampleDrugs: ["ibuprofen", "acetaminophen"],
+        whyItHelps:
+          "Ibuprofen reduces dental inflammation most effectively. Alternating ibuprofen and acetaminophen every few hours can extend pain coverage without exceeding individual drug limits.",
+        whoShouldAvoid:
+          "People with stomach ulcers, kidney disease, or on blood thinners should stick to acetaminophen.",
+        keyRisks:
+          "OTC treatments are temporary. Dental pain is a symptom of a problem that requires dental treatment.",
+        whenToSeekCare:
+          "Tooth pain lasting more than 2 days, swelling of the face or jaw, fever with tooth pain — see a dentist urgently.",
+      },
+      {
+        categoryName: "Topical Oral Anesthetics",
+        exampleDrugs: [],
+        whyItHelps:
+          "Benzocaine gel (Orajel) numbs the gum and tooth area within minutes. Provides 20–30 minutes of local relief.",
+        whoShouldAvoid:
+          "Children under 2. Large amounts can cause methemoglobinemia (rare but serious).",
+        keyRisks:
+          "Use sparingly — not for frequent repeat use. Only temporary relief.",
+        whenToSeekCare:
+          "See a dentist as soon as possible — dental infection can spread to jaw, neck, or bloodstream.",
+      },
+    ],
+  },
+  {
+    symptomKeywords: ["anxiety", "stress", "anxious", "nervous", "panic", "worried"],
+    suggestions: [
+      {
+        categoryName: "General Wellness Note",
+        exampleDrugs: [],
+        whyItHelps:
+          "There are no proven OTC medications for anxiety or panic disorder. Some people use magnesium, L-theanine, or valerian — evidence is limited. Lifestyle approaches (exercise, sleep, reduced caffeine) have good evidence.",
+        whoShouldAvoid:
+          "Do not use OTC sleep aids (diphenhydramine) as anti-anxiety medication — they are habit-forming for this purpose.",
+        keyRisks:
+          "Self-treating anxiety with alcohol, sedatives, or supplement stacks can worsen the condition or create dependence.",
+        whenToSeekCare:
+          "Anxiety affecting daily function, panic attacks, or anxiety with chest pain or shortness of breath — speak with a doctor or mental health professional.",
+      },
+    ],
+  },
+  {
+    symptomKeywords: ["fatigue", "tired", "tiredness", "low energy", "exhausted", "always tired"],
+    suggestions: [
+      {
+        categoryName: "Iron / B12 Deficiency Check",
+        exampleDrugs: [],
+        whyItHelps:
+          "Iron deficiency anemia and vitamin B12 deficiency are common, treatable causes of fatigue. A simple blood test can diagnose these.",
+        whoShouldAvoid:
+          "Do not self-supplement iron without a confirmed deficiency — excess iron is harmful.",
+        keyRisks:
+          "Fatigue has many causes (thyroid, sleep apnea, depression, chronic illness). A diagnosis is important before treating.",
+        whenToSeekCare:
+          "Persistent fatigue lasting more than 2 weeks, fatigue with shortness of breath or rapid heartbeat, or unexplained weight loss.",
+      },
+      {
+        categoryName: "Vitamin D Supplementation",
+        exampleDrugs: ["vitamin-d3"],
+        whyItHelps:
+          "Vitamin D deficiency is very common and can cause fatigue, muscle weakness, and low mood. Supplementation (1,000–2,000 IU/day) is generally safe and often beneficial.",
+        whoShouldAvoid:
+          "People with hypercalcemia or sarcoidosis. High doses (>4,000 IU/day) require medical supervision.",
+        keyRisks:
+          "Take with a fat-containing meal for best absorption. Get blood levels checked after 3 months of supplementation.",
+        whenToSeekCare:
+          "Fatigue with bone pain, muscle weakness, or depression — see your doctor for a comprehensive workup.",
+      },
+    ],
+  },
 ];
 
 export const CHIP_SYMPTOM_KEYWORDS: Record<string, string[]> = {
@@ -411,6 +619,14 @@ export const CHIP_SYMPTOM_KEYWORDS: Record<string, string[]> = {
   rash: ["itchy skin", "rash"],
   runnyNose: ["runny nose"],
   bodyAche: ["body ache"],
+  backPain: ["back pain"],
+  jointPain: ["joint pain"],
+  constipation: ["constipation"],
+  eyeIrritation: ["eye irritation"],
+  periodPain: ["period pain"],
+  toothache: ["toothache"],
+  anxiety: ["anxiety"],
+  fatigue: ["fatigue"],
 };
 
 export function detectRedFlags(input: string): string[] {

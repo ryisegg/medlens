@@ -82,6 +82,9 @@ export const en = {
       stomachPain: "Stomach Pain", diarrhea: "Diarrhea", soreThroat: "Sore Throat",
       insomnia: "Insomnia", nausea: "Nausea", rash: "Rash / Itch",
       runnyNose: "Runny Nose", bodyAche: "Body Ache",
+      backPain: "Back Pain", jointPain: "Joint Pain", constipation: "Constipation",
+      eyeIrritation: "Eye Irritation", periodPain: "Period Pain", toothache: "Toothache",
+      anxiety: "Anxiety / Stress", fatigue: "Fatigue",
     },
   },
   identifier: {
