@@ -1,6 +1,6 @@
 # MedLens
 
-MedLens is a medication lookup and safety companion for helping people understand what a medicine is used for, what risks to watch for, and when to seek professional care.
+MedLens is a medication lookup, safety, and personal medication management companion for helping people understand medicines, track schedules, and manage medicines they already have at home.
 
 ## What It Does
 
@@ -8,6 +8,11 @@ MedLens is a medication lookup and safety companion for helping people understan
 - View medication uses, side effects, contraindications, interactions, pregnancy/lactation notes, and emergency warning signs
 - Identify pills from color, shape, imprint, and strength clues
 - Check common symptom categories and see safer OTC direction with red-flag escalation
+- Track medication schedules in a mobile-first daily, weekly, and monthly calendar
+- Mark doses as upcoming, taken, missed, or skipped with local dose logs
+- Maintain a medicine cabinet inventory with quantity, strength, expiration date, type, storage location, and notes
+- Show low-stock, expired, and expiring-soon warnings for cabinet items
+- Link cabinet medicines to medication schedules
 - Enhance symptom guidance with an optional AI backend that returns structured, safety-first triage suggestions
 - Translate live medication-label sections into Chinese through an optional AI translation backend
 - Save favorites, recently viewed medications, dark mode, language preference, and simple medication reminders locally
@@ -15,7 +20,9 @@ MedLens is a medication lookup and safety companion for helping people understan
 
 ## Safety Position
 
-MedLens is an educational medication-information tool. It does not diagnose conditions, prescribe treatment, replace a clinician or pharmacist, or guarantee that a medication is appropriate for a specific person.
+MedLens is an educational medication-information and reminder tool. It does not diagnose conditions, prescribe treatment, replace a clinician or pharmacist, or guarantee that a medication is appropriate for a specific person.
+
+Medication reminders, calendar entries, and cabinet inventory warnings are informational. Users should verify labels, follow clinician instructions, and talk to a clinician or pharmacist before starting, stopping, or changing medication.
 
 For emergencies such as chest pain, trouble breathing, stroke symptoms, severe allergic reaction, overdose, poisoning, or self-harm risk, users should call emergency services or Poison Control instead of using the app for self-treatment.
 
@@ -28,6 +35,16 @@ The app combines curated demo medication records with live public data sources:
 - DailyMed for official structured product labeling from the National Library of Medicine
 
 Curated records should be treated as seed data and reviewed before production use. Legacy pregnancy letter categories are not used as primary safety guidance because FDA labeling has moved to narrative pregnancy and lactation risk information.
+
+## Personal Medication Management
+
+The medication management MVP stores data locally in `localStorage`:
+
+- `medlens_schedules` for medication schedules
+- `medlens_dose_logs` for taken, missed, skipped, and upcoming dose status
+- `medlens_cabinet` for medicine cabinet inventory
+
+This is designed for a client-side MVP. A production version should add authenticated sync, notification permissions, audit history, and clinician-reviewed medication safety rules.
 
 ## AI Backends
 
@@ -97,6 +114,8 @@ npm run build:github
 
 ## Roadmap
 
+- Add native push/local notifications for medication reminders
+- Add authenticated cloud sync for schedules, cabinet items, and dose logs
 - Add age, pregnancy/lactation, chronic-condition, and current-medication triage before symptom suggestions
 - Add stronger drug-interaction checks and duplicate-active-ingredient warnings
 - Add source citations at the field level for live drug-label content
