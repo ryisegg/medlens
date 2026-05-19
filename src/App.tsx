@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import { useApp } from "./context/AppContext";
+import { AuthProvider } from "./context/AuthContext";
 import { TopBar } from "./components/layout/TopBar";
 import { TabBar } from "./components/layout/TabBar";
 import { HomePage } from "./pages/HomePage";
@@ -13,6 +14,7 @@ import { SymptomPage } from "./pages/SymptomPage";
 import { CalendarPage } from "./pages/CalendarPage";
 import { CabinetPage } from "./pages/CabinetPage";
 import { SafetyPage } from "./pages/SafetyPage";
+import { ProfilePage } from "./pages/ProfilePage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 
 function ScrollToTop() {
@@ -63,6 +65,7 @@ function AppShell() {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/cabinet" element={<CabinetPage />} />
           <Route path="/safety" element={<SafetyPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
@@ -74,7 +77,9 @@ function AppShell() {
 function App() {
   return (
     <AppProvider>
-      <AppShell />
+      <AuthProvider>
+        <AppShell />
+      </AuthProvider>
     </AppProvider>
   );
 }

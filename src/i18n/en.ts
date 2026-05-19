@@ -1,6 +1,6 @@
 export const en = {
   appName: "MedLens",
-  tabs: { home: "Home", search: "Search", symptoms: "Symptoms", identifier: "Pill ID", safety: "Safety" },
+  tabs: { home: "Home", search: "Search", symptoms: "Symptoms", identifier: "Pill ID", safety: "Safety", profile: "Profile" },
   home: {
     heroTitle: "Know your medicine before you take it.",
     heroSubtitle: "Look up drugs, identify pills, and understand your symptoms — all in one place.",
@@ -203,6 +203,33 @@ export const en = {
     emergency: "Seek Emergency Help Now", caution: "Caution", info: "Information",
   },
   common: { back: "Back", viewAll: "View all", clear: "Clear", darkMode: "Dark", lightMode: "Light" },
+  profile: {
+    title: "Profile",
+    account: "Account",
+    signIn: "Sign in",
+    signInDesc: "Save your medications and history across devices.",
+    emailPlaceholder: "your@email.com",
+    sendMagicLink: "Send Magic Link",
+    magicLinkSent: "Check your email for a sign-in link.",
+    signInWithGoogle: "Continue with Google",
+    signedInAs: "Signed in as",
+    signOut: "Sign Out",
+    authNotConfigured: "Account sync is not yet enabled.",
+    savedMeds: "My Medications",
+    savedMedsEmpty: "Bookmark any drug to save it here.",
+    savedAt: "Saved",
+    history: "Search History",
+    historyEmpty: "Drugs you view will appear here.",
+    clearHistory: "Clear History",
+    settings: "Settings",
+    language: "Language",
+    appearance: "Appearance",
+    dark: "Dark",
+    light: "Light",
+    safetyInfo: "Safety & Disclaimer",
+    emergencyNumbers: "Emergency: 120 / 911",
+    disclaimerShort: "MedLens is for informational purposes only. Always consult a qualified healthcare professional before making medical decisions.",
+  },
 };
 
 export type Translations = typeof en;

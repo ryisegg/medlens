@@ -143,6 +143,18 @@ export interface CabinetItem {
   notes?: string;
 }
 
+export interface SavedApiDrug {
+  name: string;
+  genericName?: string;
+  savedAt: number;
+}
+
+export interface ApiHistoryEntry {
+  name: string;
+  genericName?: string;
+  viewedAt: number;
+}
+
 export interface AppContextValue {
   // Language
   language: Language;
@@ -193,4 +205,14 @@ export interface AppContextValue {
   setPillQuery: (q: PillIdentifierQuery) => void;
   identifierResults: PillIdentifierResult[];
   runIdentifier: () => void;
+
+  // Saved API drugs (bookmarks for live-fetched drugs)
+  savedApiDrugs: SavedApiDrug[];
+  toggleSavedApiDrug: (name: string, genericName?: string) => void;
+  isApiDrugSaved: (name: string) => boolean;
+
+  // API drug view history
+  apiHistory: ApiHistoryEntry[];
+  addToApiHistory: (name: string, genericName?: string) => void;
+  clearApiHistory: () => void;
 }

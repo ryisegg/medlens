@@ -8,6 +8,7 @@ import {
 } from "react";
 import type {
   AppContextValue,
+  ApiHistoryEntry,
   Drug,
   DrugCategory,
   Language,
@@ -15,6 +16,7 @@ import type {
   PillIdentifierQuery,
   PillIdentifierResult,
   Reminder,
+  SavedApiDrug,
   SymptomSuggestion,
 } from "../types";
 import { getDrugById, getDrugsByCategory } from "../data/drugs";
@@ -62,6 +64,12 @@ function loadFavorites(): string[] {
 function loadReminders(): Reminder[] {
   return loadJSON<Reminder[]>("medlens_reminders", []);
 }
+function loadSavedApiDrugs(): SavedApiDrug[] {
+  return loadJSON<SavedApiDrug[]>("medlens_saved_api", []);
+}
+function loadApiHistory(): ApiHistoryEntry[] {
+  return loadJSON<ApiHistoryEntry[]>("medlens_api_history", []);
+}
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageRaw] = useState<Language>(loadLanguage);
@@ -78,6 +86,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [symptomSuggestions, setSymptomSuggestions] = useState<SymptomSuggestion[]>([]);
   const [pillQuery, setPillQuery] = useState<PillIdentifierQuery>(EMPTY_PILL_QUERY);
   const [identifierResults, setIdentifierResults] = useState<PillIdentifierResult[]>([]);
+  const [savedApiDrugs, setSavedApiDrugs] = useState<SavedApiDrug[]>(loadSavedApiDrugs);
+  const [apiHistory, setApiHistory] = useState<ApiHistoryEntry[]>(loadApiHistory);
 
   // ── Language ──────────────────────────────────────────────────────────────
   const setLanguage = useCallback((lang: Language) => {
@@ -201,6 +211,37 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIdentifierResults(runPillIdentifier(pillQuery));
   }, [pillQuery]);
 
+  // ── Saved API drugs ───────────────────────────────────────────────────────
+  const toggleSavedApiDrug = useCallback((name: string, genericName?: string) => {
+    setSavedApiDrugs((prev) => {
+      const exists = prev.some((d) => d.name.toLowerCase() === name.toLowerCase());
+      const next = exists
+        ? prev.filter((d) => d.name.toLowerCase() !== name.toLowerCase())
+        : [{ name, genericName, savedAt: Date.now() }, ...prev];
+      saveJSON("medlens_saved_api", next);
+      return next;
+    });
+  }, []);
+
+  const isApiDrugSaved = useCallback((name: string) => {
+    return savedApiDrugs.some((d) => d.name.toLowerCase() === name.toLowerCase());
+  }, [savedApiDrugs]);
+
+  // ── API view history ──────────────────────────────────────────────────────
+  const addToApiHistory = useCallback((name: string, genericName?: string) => {
+    setApiHistory((prev) => {
+      const filtered = prev.filter((d) => d.name.toLowerCase() !== name.toLowerCase());
+      const next = [{ name, genericName, viewedAt: Date.now() }, ...filtered].slice(0, 20);
+      saveJSON("medlens_api_history", next);
+      return next;
+    });
+  }, []);
+
+  const clearApiHistory = useCallback(() => {
+    setApiHistory([]);
+    try { localStorage.removeItem("medlens_api_history"); } catch { /* ignore */ }
+  }, []);
+
   const value = useMemo<AppContextValue>(
     () => ({
       language, setLanguage,
@@ -219,6 +260,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       symptomSuggestions, runSymptomCheck,
       pillQuery, setPillQuery,
       identifierResults, runIdentifier,
+      savedApiDrugs, toggleSavedApiDrug, isApiDrugSaved,
+      apiHistory, addToApiHistory, clearApiHistory,
     }),
     [
       language, setLanguage,
@@ -232,6 +275,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       symptomInput, selectedSymptoms, toggleSymptom, clearSelectedSymptoms,
       detectedRedFlags, symptomSuggestions, runSymptomCheck,
       pillQuery, identifierResults, runIdentifier,
+      savedApiDrugs, toggleSavedApiDrug, isApiDrugSaved,
+      apiHistory, addToApiHistory, clearApiHistory,
     ],
   );
 

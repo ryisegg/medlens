@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ApiDrugDetail } from "../../types/api";
 import { useApp } from "../../context/AppContext";
@@ -121,8 +121,16 @@ const SOURCE_LABEL: Record<ApiDrugDetail["source"], string> = {
 
 export function ApiDrugDetailView({ drug }: Props) {
   const navigate = useNavigate();
-  const { language } = useApp();
+  const { language, toggleSavedApiDrug, isApiDrugSaved, addToApiHistory } = useApp();
   const t = getTranslations(language);
+  const saved = isApiDrugSaved(drug.name);
+
+  const trackedRef = useRef(false);
+  useEffect(() => {
+    if (trackedRef.current) return;
+    trackedRef.current = true;
+    addToApiHistory(drug.name, drug.genericName ?? undefined);
+  }, [addToApiHistory, drug.name, drug.genericName]);
   const [translatedTextById, setTranslatedTextById] = useState<Record<string, string>>({});
   const [translationLoading, setTranslationLoading] = useState(false);
   const [translationError, setTranslationError] = useState<string | null>(null);
@@ -195,6 +203,22 @@ export function ApiDrugDetailView({ drug }: Props) {
               </span>
             )}
           </div>
+          <button
+            type="button"
+            onClick={() => toggleSavedApiDrug(drug.name, drug.genericName ?? undefined)}
+            aria-label={saved ? "Remove from saved" : "Save drug"}
+            className="flex-shrink-0 rounded-full p-1.5 transition-colors hover:bg-slate-100 dark:hover:bg-[#2c2c2e]"
+          >
+            {saved ? (
+              <svg className="h-5 w-5 text-blue-600 dark:text-[#0a84ff]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6.32 2.577a49.255 49.255 0 0111.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 01-1.085.67L12 18.089l-7.165 3.583A.75.75 0 013.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93z" />
+              </svg>
+            ) : (
+              <svg className="h-5 w-5 text-slate-400 dark:text-[#636366]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+              </svg>
+            )}
+          </button>
         </div>
 
         <h1 className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">{drug.name}</h1>
