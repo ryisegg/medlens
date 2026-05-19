@@ -17,7 +17,7 @@ type SymptomAdviceRequest = {
 };
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
-const DEFAULT_MODEL = "gpt-4.1-mini";
+const DEFAULT_MODEL = "gpt-4o-mini";
 
 const adviceSchema = {
   type: "json_schema",
