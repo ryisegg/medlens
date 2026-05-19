@@ -46,7 +46,7 @@ Copy `.env.example` and configure these values in your deployment host:
 
 ```bash
 OPENAI_API_KEY=your_openai_api_key
-OPENAI_MODEL=gpt-4.1-mini
+OPENAI_MODEL=gpt-4o-mini
 ALLOWED_ORIGIN=https://ryisegg.github.io
 ```
 
