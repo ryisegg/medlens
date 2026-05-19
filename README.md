@@ -9,6 +9,7 @@ MedLens is a medication lookup and safety companion for helping people understan
 - Identify pills from color, shape, imprint, and strength clues
 - Check common symptom categories and see safer OTC direction with red-flag escalation
 - Enhance symptom guidance with an optional AI backend that returns structured, safety-first triage suggestions
+- Translate live medication-label sections into Chinese through an optional AI translation backend
 - Save favorites, recently viewed medications, dark mode, language preference, and simple medication reminders locally
 - Pull live search/detail data from RxNorm, openFDA, and DailyMed where available
 
@@ -28,17 +29,20 @@ The app combines curated demo medication records with live public data sources:
 
 Curated records should be treated as seed data and reviewed before production use. Legacy pregnancy letter categories are not used as primary safety guidance because FDA labeling has moved to narrative pregnancy and lactation risk information.
 
-## AI Symptom Backend
+## AI Backends
 
-The repo includes a Vercel-compatible serverless function at `api/symptom-advice.ts`. It accepts symptom text and selected chips, calls the OpenAI Responses API, and returns structured JSON for the symptom page.
+The repo includes Vercel-compatible serverless functions:
 
-The AI backend is intentionally conservative:
+- `api/symptom-advice.ts` accepts symptom text and selected chips, calls the OpenAI Responses API, and returns structured JSON for the symptom page.
+- `api/translate.ts` accepts medication-label sections and returns faithful medical translations while preserving drug names, units, warnings, and contraindications.
 
-- It gives education and triage guidance only
-- It does not diagnose, prescribe, or calculate personalized dosing
-- It prioritizes emergency red flags
-- It suggests OTC medication classes, examples, avoid-if guidance, and key risks
-- It always keeps the local rule-based symptom suggestions as a fallback
+The AI backends are intentionally conservative:
+
+- They give education and triage guidance only
+- They do not diagnose, prescribe, or calculate personalized dosing
+- They prioritize emergency red flags
+- They preserve source warning language during translation
+- The symptom checker keeps local rule-based suggestions as a fallback
 
 ### Environment Variables
 
@@ -50,13 +54,14 @@ OPENAI_MODEL=gpt-4o-mini
 ALLOWED_ORIGIN=https://ryisegg.github.io
 ```
 
-If the frontend stays on GitHub Pages and the API is deployed elsewhere, also set this when building the frontend:
+If the frontend stays on GitHub Pages and the API is deployed elsewhere, also set these when building the frontend:
 
 ```bash
 VITE_AI_API_URL=https://your-vercel-app.vercel.app/api/symptom-advice
+VITE_TRANSLATE_API_URL=https://your-vercel-app.vercel.app/api/translate
 ```
 
-If the full app is deployed on Vercel, the frontend can use the default same-origin path `/api/symptom-advice`.
+If the full app is deployed on Vercel, the frontend can use the default same-origin paths `/api/symptom-advice` and `/api/translate`.
 
 ## Tech Stack
 
