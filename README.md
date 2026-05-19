@@ -46,12 +46,16 @@ The medication management MVP stores data locally in `localStorage`:
 
 This is designed for a client-side MVP. A production version should add authenticated sync, notification permissions, audit history, and clinician-reviewed medication safety rules.
 
-## AI Backends
+## Backend
 
 The repo includes Vercel-compatible serverless functions:
 
-- `api/symptom-advice.ts` accepts symptom text and selected chips, calls the OpenAI Responses API, and returns structured JSON for the symptom page.
-- `api/translate.ts` accepts medication-label sections and returns faithful medical translations while preserving drug names, units, warnings, and contraindications.
+- `GET /api/health` reports API availability and configuration status
+- `POST /api/symptom-advice` accepts symptom text and selected chips, calls the OpenAI Responses API, and returns structured JSON for the symptom page
+- `POST /api/translate` accepts medication-label sections and returns faithful medical translations while preserving drug names, units, warnings, and contraindications
+- `POST /api/medication-management` validates schedule, dose log, and medicine cabinet payloads as the contract for future cloud sync
+
+See `docs/backend.md` for the cloud-sync database roadmap.
 
 The AI backends are intentionally conservative:
 
