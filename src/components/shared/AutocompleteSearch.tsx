@@ -28,7 +28,7 @@ const TTY_LABEL: Record<string, string> = {
 function hitPath(h: Hit): string {
   return h.kind === "local"
     ? `/drugs/${h.drug.id}`
-    : `/drugs/api/${encodeURIComponent(h.result.name)}`;
+    : `/drugs/api/${encodeURIComponent(h.result.rxcui)}`;
 }
 
 function hitLabel(h: Hit): string {
