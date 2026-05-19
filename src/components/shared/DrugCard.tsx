@@ -19,7 +19,6 @@ const CATEGORY_COLORS: Record<DrugCategory, string> = {
   "Chronic Conditions":  "bg-slate-100 text-slate-700 dark:bg-slate-700/30 dark:text-slate-300",
 };
 
-
 function HeartIcon({ filled }: { filled: boolean }) {
   return filled ? (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
@@ -39,8 +38,9 @@ export function DrugCard({ drug, onClick }: DrugCardProps) {
   const isZh = language === "zh";
   const handleClick = onClick ?? (() => navigate(`/drugs/${drug.id}`));
 
-  const zhName = translateDrugNameOnly(drug.name);
+  const zhName = drug.chineseName ?? translateDrugNameOnly(drug.name);
   const hasZhName = zhName !== drug.name;
+  const description = isZh && drug.chineseSummary ? drug.chineseSummary : drug.description;
 
   const categoryLabel = isZh ? DRUG_CATEGORY_ZH[drug.category] : drug.category;
   const otcLabel = isZh
@@ -68,7 +68,6 @@ export function DrugCard({ drug, onClick }: DrugCardProps) {
           </span>
         </div>
 
-        {/* Drug name — Chinese name shown prominently when available */}
         {isZh && hasZhName ? (
           <>
             <h3 className="text-base font-semibold text-slate-900 dark:text-white">{zhName}</h3>
@@ -78,7 +77,7 @@ export function DrugCard({ drug, onClick }: DrugCardProps) {
           <h3 className="text-base font-semibold text-slate-900 dark:text-white">{drug.name}</h3>
         )}
 
-        <p className="mt-0.5 text-sm text-slate-500 line-clamp-2 dark:text-[#8e8e93]">{drug.description}</p>
+        <p className="mt-0.5 text-sm text-slate-500 line-clamp-2 dark:text-[#8e8e93]">{description}</p>
         {drug.brandNames.length > 0 && (
           <p className="mt-1.5 text-xs text-slate-400 dark:text-[#636366]">
             {brandLabel}: {drug.brandNames.slice(0, 3).join(", ")}
