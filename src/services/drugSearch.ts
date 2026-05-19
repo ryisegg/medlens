@@ -1,5 +1,5 @@
 import type { ApiSearchResult, ApiDrugDetail } from "../types/api";
-import { searchRxNorm } from "./rxnormApi";
+import { getRxNormInfo, searchRxNorm } from "./rxnormApi";
 import { fetchOpenFdaByName, fetchOpenFdaByRxcui } from "./openFdaApi";
 import { fetchDailyMedByName } from "./dailymedApi";
 
@@ -13,9 +13,12 @@ export async function fetchDrugDetail(
   nameOrRxcui: string,
   isRxcui = false
 ): Promise<ApiDrugDetail | null> {
+  const rxNormInfo = isRxcui ? await getRxNormInfo(nameOrRxcui) : null;
+  const lookupName = rxNormInfo?.name ?? nameOrRxcui;
+
   const openFdaResult = isRxcui
-    ? await fetchOpenFdaByRxcui(nameOrRxcui, nameOrRxcui)
-    : await fetchOpenFdaByName(nameOrRxcui);
+    ? await fetchOpenFdaByRxcui(nameOrRxcui, lookupName)
+    : await fetchOpenFdaByName(lookupName);
 
   // If openFDA has substantive content, return it directly
   if (openFdaResult?.indicationsAndUsage || openFdaResult?.warnings || openFdaResult?.adverseReactions) {
@@ -23,7 +26,7 @@ export async function fetchDrugDetail(
   }
 
   // Otherwise try DailyMed as fallback
-  const dmDetail = await fetchDailyMedByName(nameOrRxcui);
+  const dmDetail = await fetchDailyMedByName(lookupName);
   if (dmDetail) {
     // Merge: if openFDA had partial data (name/brand), prefer it but fill source from DailyMed
     if (openFdaResult) {
