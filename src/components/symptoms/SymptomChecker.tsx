@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import { getTranslations } from "../../i18n";
@@ -232,18 +232,6 @@ export function SymptomChecker() {
     }
   }, [hasInput, language, selectedSymptoms, symptomInput, t.symptoms.chips]);
 
-  useEffect(() => {
-    if (!hasInput) return;
-
-    const timer = window.setTimeout(() => {
-      setHasChecked(true);
-      runSymptomCheck();
-      void runAiAdvice();
-    }, 650);
-
-    return () => window.clearTimeout(timer);
-  }, [hasInput, symptomInput, selectedSymptoms, runSymptomCheck, runAiAdvice]);
-
   function handleCheck() {
     setHasChecked(true);
     runSymptomCheck();
@@ -315,7 +303,7 @@ export function SymptomChecker() {
         </button>
         {hasInput && (
           <p className="mt-2 text-center text-xs text-slate-400 dark:text-[#636366]">
-            {isZh ? "输入后会自动分析；AI 后端配置后会同时生成智能建议。" : "Suggestions update automatically; AI guidance appears when the backend is configured."}
+            {isZh ? "点击按钮后分析症状并获取 AI 建议。" : "Click the button to analyze symptoms and get AI guidance."}
           </p>
         )}
       </div>

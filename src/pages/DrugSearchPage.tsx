@@ -9,6 +9,8 @@ import { DrugCardSkeleton } from "../components/shared/DrugCardSkeleton";
 import type { Drug, DrugCategory, OtcRxFilter } from "../types";
 import { ALL_CATEGORIES, getDrugsByCategory } from "../data/catalog";
 import { searchRxNorm } from "../services/rxnormApi";
+import { fetchAiDrugSearch } from "../services/aiDrugSearch";
+import type { AiDrugSuggestion } from "../services/aiDrugSearch";
 import { DRUG_CATEGORY_ZH, translateDrugNameOnly } from "../utils/medicalTranslation";
 
 const CATEGORY_EMOJIS: Record<DrugCategory | "All", string> = {
@@ -70,6 +72,16 @@ export function DrugSearchPage() {
     queryFn: () => searchRxNorm(liveQuery),
     enabled: liveQuery.length >= 2,
     staleTime: 6 * 60 * 60 * 1000,
+  });
+
+  const showAiSearch = liveQuery.length >= 3;
+  const { data: aiData, isPending: aiLoading, isError: aiError } = useQuery({
+    queryKey: ["ai-drug-search", liveQuery, language],
+    queryFn: () => fetchAiDrugSearch({ query: liveQuery, language }),
+    enabled: showAiSearch,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    retry: 1,
   });
 
   const localNames = new Set(localDrugs.map((drug) => drug.name.toLowerCase()));
@@ -149,6 +161,7 @@ export function DrugSearchPage() {
         </p>
       </div>
 
+      {/* Local curated results */}
       <div className="px-4 pb-4">
         {localDrugs.length === 0 && !searchQuery ? (
           <div className="space-y-3 mt-1">
@@ -169,12 +182,11 @@ export function DrugSearchPage() {
             <p className="px-1 text-xs font-medium text-slate-400 dark:text-[#636366]">{loadingText}</p>
             {[1, 2].map((i) => <DrugCardSkeleton key={i} />)}
           </div>
-        ) : visibleLiveResults.length === 0 ? (
+        ) : visibleLiveResults.length === 0 && !showAiSearch ? (
           <div className="mt-4 rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-[#1c1c1e]">
             <div className="text-4xl mb-3">🔍</div>
             <p className="font-semibold text-slate-700 dark:text-white">{t.search.noResults}</p>
             <p className="mt-1 text-sm text-slate-400 dark:text-[#636366]">{t.search.noResultsDesc}</p>
-            <p className="mt-1 text-xs text-blue-600 dark:text-[#0a84ff]">{t.search.liveTip}</p>
             <button
               type="button"
               onClick={() => setSearchQuery("")}
@@ -183,13 +195,92 @@ export function DrugSearchPage() {
               {t.common.clear}
             </button>
           </div>
-        ) : (
+        ) : visibleLiveResults.length > 0 ? (
           <div className="mt-1 space-y-3">
             <p className="px-1 text-xs text-slate-400 dark:text-[#636366]">{noLocalText}</p>
           </div>
-        )}
+        ) : null}
       </div>
 
+      {/* AI Search — primary fallback when no local results */}
+      {showAiSearch && (
+        <div className="px-4 pb-4">
+          <div className="mb-2 flex items-center gap-2 px-1">
+            <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">AI</span>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
+              {language === "zh" ? "AI 智能药物建议" : "AI Drug Suggestions"}
+            </p>
+          </div>
+
+          {aiLoading ? (
+            <div className="space-y-2">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="rounded-2xl bg-white p-4 shadow-sm dark:bg-[#1c1c1e] animate-pulse">
+                  <div className="h-3 w-2/3 rounded bg-slate-200 dark:bg-[#2c2c2e]" />
+                  <div className="mt-2 h-2.5 w-full rounded bg-slate-100 dark:bg-[#2c2c2e]" />
+                  <div className="mt-1 h-2.5 w-4/5 rounded bg-slate-100 dark:bg-[#2c2c2e]" />
+                </div>
+              ))}
+            </div>
+          ) : aiError ? (
+            <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-3 text-xs text-slate-400 dark:border-[#2c2c2e] dark:bg-[#1c1c1e] dark:text-[#636366]">
+              {language === "zh" ? "AI 搜索暂时不可用（需配置 API）。" : "AI search unavailable (API not configured)."}
+            </div>
+          ) : aiData?.suggestions && aiData.suggestions.length > 0 ? (
+            <div className="space-y-2">
+              {aiData.seeDoctor && (
+                <div className="rounded-2xl bg-amber-50 border border-amber-200 px-3 py-2.5 dark:bg-amber-950/30 dark:border-amber-800">
+                  <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+                    {language === "zh" ? "建议咨询医生或药剂师。" : "Consider consulting a doctor or pharmacist for this condition."}
+                  </p>
+                </div>
+              )}
+              {aiData.suggestions.map((s: AiDrugSuggestion) => (
+                <div key={s.name} className="rounded-2xl bg-white px-4 py-3.5 shadow-sm dark:bg-[#1c1c1e]">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold leading-tight text-slate-900 dark:text-white">{s.name}</p>
+                      {s.genericName && s.genericName !== s.name && (
+                        <p className="text-xs text-slate-500 dark:text-[#8e8e93]">{s.genericName}</p>
+                      )}
+                    </div>
+                    <div className="flex flex-shrink-0 gap-1">
+                      <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">AI</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                        s.otcOrRx === "OTC"
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                          : s.otcOrRx === "Rx"
+                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+                          : "bg-slate-100 text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]"
+                      }`}>
+                        {s.otcOrRx}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="mt-1.5 text-xs leading-relaxed text-slate-600 dark:text-[#8e8e93]">{s.summary}</p>
+                  {s.keyUses.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {s.keyUses.map((use) => (
+                        <span key={use} className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]">
+                          {use}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {s.warnings && (
+                    <p className="mt-2 text-[11px] text-amber-700 dark:text-amber-400">⚠ {s.warnings}</p>
+                  )}
+                </div>
+              ))}
+              {aiData.disclaimer && (
+                <p className="px-1 text-[10px] text-slate-400 dark:text-[#636366]">{aiData.disclaimer}</p>
+              )}
+            </div>
+          ) : null}
+        </div>
+      )}
+
+      {/* RxNorm live results */}
       {visibleLiveResults.length > 0 && (
         <div className="px-4 pb-4">
           <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
