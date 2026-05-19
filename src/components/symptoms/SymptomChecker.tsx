@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import { getTranslations } from "../../i18n";
@@ -81,6 +82,27 @@ function SymptomSuggestionCard({ suggestion, t, language }: SuggestionCardProps)
   );
 }
 
+function NoSuggestionCard({ language }: { language: string }) {
+  const isZh = language === "zh";
+  return (
+    <div className="rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4 shadow-sm dark:border-blue-900/40 dark:bg-blue-950/30">
+      <div className="mb-2 flex items-center gap-2 text-blue-800 dark:text-blue-300">
+        <span>✨</span>
+        <h3 className="text-sm font-bold">{isZh ? "智能分诊建议" : "Smart triage guidance"}</h3>
+      </div>
+      <p className="text-sm leading-relaxed text-blue-900 dark:text-blue-200">
+        {isZh
+          ? "暂时没有匹配到明确的非处方药类别。请补充症状持续时间、年龄、是否怀孕/哺乳、基础病和正在使用的药物。若症状严重、持续加重或影响呼吸/意识，请优先就医。"
+          : "No specific OTC category matched yet. Add duration, age, pregnancy/lactation status, chronic conditions, and current medications. Seek care first if symptoms are severe, worsening, or affect breathing/consciousness."}
+      </p>
+      <div className="mt-3 grid gap-2 text-xs text-blue-800 dark:text-blue-300">
+        <p>{isZh ? "可以这样写：发烧 2 天，38.8 度，成人，没有基础病。" : "Try: fever for 2 days, 101.8°F, adult, no chronic conditions."}</p>
+        <p>{isZh ? "这个提示不是诊断，也不会替代医生或药剂师。" : "This is not a diagnosis and does not replace a clinician or pharmacist."}</p>
+      </div>
+    </div>
+  );
+}
+
 export function SymptomChecker() {
   const {
     language, symptomInput, setSymptomInput,
@@ -91,6 +113,31 @@ export function SymptomChecker() {
   const isZh = language === "zh";
   const redFlagGroups = getMatchedRedFlagGroups(detectedRedFlags);
   const hasInput = selectedSymptoms.length > 0 || symptomInput.trim().length > 0;
+  const [hasChecked, setHasChecked] = useState(false);
+
+  useEffect(() => {
+    if (!hasInput) {
+      setHasChecked(false);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setHasChecked(true);
+      runSymptomCheck();
+    }, 650);
+
+    return () => window.clearTimeout(timer);
+  }, [hasInput, symptomInput, selectedSymptoms, runSymptomCheck]);
+
+  function handleCheck() {
+    setHasChecked(true);
+    runSymptomCheck();
+  }
+
+  function handleClear() {
+    setHasChecked(false);
+    clearSelectedSymptoms();
+  }
 
   return (
     <div className="space-y-3 px-4 py-4">
@@ -100,12 +147,11 @@ export function SymptomChecker() {
         message={t.symptoms.disclaimerDesc}
       />
 
-      {/* Chip selection + free text */}
       <div className="rounded-2xl bg-white px-5 py-4 shadow-sm dark:bg-[#1c1c1e]">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-semibold text-slate-800 dark:text-white">{t.symptoms.selectSymptoms}</p>
           {(selectedSymptoms.length > 0 || symptomInput) && (
-            <button type="button" onClick={clearSelectedSymptoms} className="text-xs font-medium text-slate-400 dark:text-[#636366]">
+            <button type="button" onClick={handleClear} className="text-xs font-medium text-slate-400 dark:text-[#636366]">
               {t.symptoms.clearButton}
             </button>
           )}
@@ -143,15 +189,19 @@ export function SymptomChecker() {
 
         <button
           type="button"
-          onClick={runSymptomCheck}
+          onClick={handleCheck}
           disabled={!hasInput}
           className="mt-3 w-full rounded-2xl bg-blue-600 py-3 text-sm font-semibold text-white transition disabled:opacity-40 dark:bg-[#0a84ff]"
         >
-          {t.symptoms.checkButton}
+          {hasChecked ? (isZh ? "重新分析" : "Analyze again") : t.symptoms.checkButton}
         </button>
+        {hasInput && (
+          <p className="mt-2 text-center text-xs text-slate-400 dark:text-[#636366]">
+            {isZh ? "输入后会自动分析，也可以手动点击按钮。" : "Suggestions update automatically; you can also tap the button."}
+          </p>
+        )}
       </div>
 
-      {/* Emergency red-flag banners */}
       {redFlagGroups.length > 0 && (
         <div className="space-y-3">
           {redFlagGroups.map((group, i) => (
@@ -178,7 +228,6 @@ export function SymptomChecker() {
         </div>
       )}
 
-      {/* Drug suggestions */}
       {detectedRedFlags.length === 0 && symptomSuggestions.length > 0 && (
         <div className="space-y-3">
           <p className="px-1 text-sm font-semibold text-slate-700 dark:text-white">{t.symptoms.results}</p>
@@ -186,6 +235,10 @@ export function SymptomChecker() {
             <SymptomSuggestionCard key={i} suggestion={s} t={t} language={language} />
           ))}
         </div>
+      )}
+
+      {hasChecked && hasInput && detectedRedFlags.length === 0 && symptomSuggestions.length === 0 && (
+        <NoSuggestionCard language={language} />
       )}
     </div>
   );
