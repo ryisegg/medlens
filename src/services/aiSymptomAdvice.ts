@@ -1,3 +1,5 @@
+import { fetchJson, getApiUrl } from "./apiClient";
+
 export interface AiOtcCategory {
   name: string;
   examples: string[];
@@ -23,39 +25,16 @@ interface FetchAiSymptomAdviceParams {
   selectedSymptoms: string[];
 }
 
-function getAiEndpoint() {
-  const configuredEndpoint = import.meta.env.VITE_AI_API_URL as string | undefined;
-  if (configuredEndpoint) {
-    return configuredEndpoint;
-  }
-
-  if (typeof window !== "undefined" && window.location.hostname.endsWith("github.io")) {
-    return "";
-  }
-
-  return "/api/symptom-advice";
-}
-
 export async function fetchAiSymptomAdvice({
   language,
   freeText,
   selectedSymptoms,
 }: FetchAiSymptomAdviceParams): Promise<AiSymptomAdvice> {
-  const endpoint = getAiEndpoint();
-  if (!endpoint) {
-    throw new Error("AI backend endpoint is not configured for this deployment.");
-  }
+  const endpoint = getApiUrl("/api/symptom-advice", import.meta.env.VITE_AI_API_URL as string | undefined);
 
-  const response = await fetch(endpoint, {
+  return fetchJson<AiSymptomAdvice>(endpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ language, freeText, selectedSymptoms }),
   });
-
-  const data = await response.json().catch(() => null);
-  if (!response.ok) {
-    throw new Error(data?.error ?? "AI advice is unavailable.");
-  }
-
-  return data as AiSymptomAdvice;
 }
