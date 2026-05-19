@@ -8,11 +8,15 @@ export interface UseApiDrugResult {
   error: string | null;
 }
 
+function isRxcui(value: string): boolean {
+  return /^\d+$/.test(value.trim());
+}
+
 export function useApiDrug(name: string): UseApiDrugResult {
   const { data, isPending, isError } = useQuery({
     queryKey: ["drugDetail", name],
     queryFn: async () => {
-      const detail = await fetchDrugDetail(name);
+      const detail = await fetchDrugDetail(name, isRxcui(name));
       if (!detail) throw new Error("No verified medication information found.");
       return detail;
     },
