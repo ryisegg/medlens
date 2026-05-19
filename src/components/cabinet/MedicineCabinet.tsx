@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { CabinetItem, MedicationSchedule } from "../../types";
 import { useApp } from "../../context/AppContext";
 import { CabinetItemCard } from "./CabinetItemCard";
@@ -215,7 +215,7 @@ function CabinetForm({ language, item, onSave, onCancel }: {
   );
 }
 
-function Field({ label, className, children }: { label: string; className: string; children: React.ReactNode }) {
+function Field({ label, className, children }: { label: string; className: string; children: ReactNode }) {
   return (
     <label>
       <span className={className}>{label}</span>
