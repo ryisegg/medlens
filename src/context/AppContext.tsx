@@ -19,6 +19,7 @@ import type {
 } from "../types";
 import { getDrugById, getDrugsByCategory } from "../data/drugs";
 import { detectRedFlags, getSymptomSuggestions, CHIP_SYMPTOM_KEYWORDS } from "../data/symptoms";
+import { translateDrugNameOnly } from "../utils/medicalTranslation";
 import { runPillIdentifier } from "../data/identifier";
 
 const AppContext = createContext<AppContextValue | null>(null);
@@ -107,15 +108,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
     const q = searchQuery.toLowerCase().trim();
     if (!q) return result;
-    return result.filter(
-      (d) =>
+    return result.filter((d) => {
+      const zhName = translateDrugNameOnly(d.name);
+      return (
         d.name.toLowerCase().includes(q) ||
         d.genericName.toLowerCase().includes(q) ||
         d.brandNames.some((b) => b.toLowerCase().includes(q)) ||
         d.activeIngredient.toLowerCase().includes(q) ||
         d.description.toLowerCase().includes(q) ||
-        d.imprintExamples.some((imp) => imp.toLowerCase().includes(q)),
-    );
+        d.imprintExamples.some((imp) => imp.toLowerCase().includes(q)) ||
+        (zhName !== d.name && zhName.includes(q))
+      );
+    });
   }, [searchQuery, activeCategory, otcRxFilter]);
 
   const setSearchQuery = useCallback((q: string) => setSearchQueryRaw(q), []);
@@ -234,6 +238,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useApp(): AppContextValue {
   const ctx = useContext(AppContext);
   if (!ctx) throw new Error("useApp must be used within AppProvider");

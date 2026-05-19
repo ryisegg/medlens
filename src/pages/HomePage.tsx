@@ -4,6 +4,7 @@ import { useApp } from "../context/AppContext";
 import { getTranslations } from "../i18n";
 import { DrugCard } from "../components/shared/DrugCard";
 import { getDrugById } from "../data/drugs";
+import { DRUG_CATEGORY_ZH } from "../utils/medicalTranslation";
 import type { DrugCategory } from "../types";
 
 const COMMON_SEARCHES = ["Ibuprofen", "Tylenol", "Benadryl", "Aspirin", "Metformin", "Lisinopril"];
@@ -27,15 +28,6 @@ const STAT_CARDS = [
   { value: "3", labelEn: "FDA Databases", labelZh: "FDA数据库" },
   { value: "EN/ZH", labelEn: "Bilingual", labelZh: "双语支持" },
 ];
-
-function translateCategory(cat: string): string {
-  const map: Record<string, string> = {
-    "Pain Relief": "止痛", "Allergy": "抗过敏", "Cold & Flu": "感冒流感",
-    "Digestive Health": "消化", "Skin": "皮肤", "Sleep": "睡眠",
-    "Vitamins": "维生素", "Chronic Conditions": "慢性病",
-  };
-  return map[cat] ?? cat;
-}
 
 function formatTime(time: string): string {
   const [h, m] = time.split(":").map(Number);
@@ -334,7 +326,7 @@ export function HomePage() {
               className="flex flex-col items-center gap-1.5 rounded-2xl bg-white p-3 shadow-sm transition active:scale-95 dark:bg-[#1c1c1e]">
               <span className="text-2xl">{icon}</span>
               <span className="text-center text-[10px] font-medium leading-tight text-slate-600 dark:text-[#8e8e93]">
-                {isZh ? translateCategory(cat) : cat}
+                {isZh ? DRUG_CATEGORY_ZH[cat] : cat}
               </span>
             </button>
           ))}

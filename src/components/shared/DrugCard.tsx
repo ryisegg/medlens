@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { Drug, DrugCategory } from "../../types";
 import { useApp } from "../../context/AppContext";
-import { translateDrugNameOnly } from "../../utils/medicalTranslation";
+import { translateDrugNameOnly, DRUG_CATEGORY_ZH } from "../../utils/medicalTranslation";
 
 interface DrugCardProps {
   drug: Drug;
@@ -19,16 +19,6 @@ const CATEGORY_COLORS: Record<DrugCategory, string> = {
   "Chronic Conditions":  "bg-slate-100 text-slate-700 dark:bg-slate-700/30 dark:text-slate-300",
 };
 
-const CATEGORY_ZH: Record<DrugCategory, string> = {
-  "Pain Relief":        "止痛",
-  "Allergy":            "抗过敏",
-  "Cold & Flu":         "感冒流感",
-  "Digestive Health":   "消化",
-  "Skin":               "皮肤",
-  "Sleep":              "睡眠",
-  "Vitamins":           "维生素",
-  "Chronic Conditions": "慢性病",
-};
 
 function HeartIcon({ filled }: { filled: boolean }) {
   return filled ? (
@@ -52,7 +42,7 @@ export function DrugCard({ drug, onClick }: DrugCardProps) {
   const zhName = translateDrugNameOnly(drug.name);
   const hasZhName = zhName !== drug.name;
 
-  const categoryLabel = isZh ? CATEGORY_ZH[drug.category] : drug.category;
+  const categoryLabel = isZh ? DRUG_CATEGORY_ZH[drug.category] : drug.category;
   const otcLabel = isZh
     ? drug.otcOrRx === "OTC" ? "非处方" : "处方药"
     : drug.otcOrRx;

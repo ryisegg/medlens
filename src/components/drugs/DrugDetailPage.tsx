@@ -4,6 +4,7 @@ import { useApp } from "../../context/AppContext";
 import { getTranslations } from "../../i18n";
 import { WarningBanner } from "../shared/WarningBanner";
 import { InteractionWarning } from "../shared/InteractionWarning";
+import { translateDrugNameOnly, DRUG_CATEGORY_ZH } from "../../utils/medicalTranslation";
 
 interface DrugDetailPageProps {
   drug: Drug;
@@ -47,7 +48,10 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
   const navigate = useNavigate();
   const { language, favorites, toggleFavorite } = useApp();
   const t = getTranslations(language);
+  const isZh = language === "zh";
   const isFav = favorites.includes(drug.id);
+  const zhName = translateDrugNameOnly(drug.name);
+  const hasZhName = zhName !== drug.name;
   const pregnancyLetterNote =
     language === "zh"
       ? "FDA 已不再使用旧的妊娠字母分级；请以标签中的叙述性风险说明为准。"
@@ -66,7 +70,7 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
               {drug.otcOrRx === "OTC" ? t.drug.otc : t.drug.rx}
             </span>
             <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-              {drug.category}
+              {isZh ? DRUG_CATEGORY_ZH[drug.category] : drug.category}
             </span>
             <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]">
               {drug.source}
@@ -86,7 +90,14 @@ export function DrugDetailPage({ drug }: DrugDetailPageProps) {
           </button>
         </div>
 
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{drug.name}</h1>
+        {isZh && hasZhName ? (
+          <>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{zhName}</h1>
+            <p className="text-sm text-slate-400 dark:text-[#636366]">{drug.name}</p>
+          </>
+        ) : (
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">{drug.name}</h1>
+        )}
         <p className="mt-0.5 text-sm text-slate-500 dark:text-[#8e8e93]">
           {t.drug.genericName}: <span className="font-medium text-slate-700 dark:text-white">{drug.genericName}</span>
         </p>

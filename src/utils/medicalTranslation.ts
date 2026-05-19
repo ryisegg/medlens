@@ -1,3 +1,16 @@
+import type { DrugCategory } from "../types";
+
+export const DRUG_CATEGORY_ZH: Record<DrugCategory, string> = {
+  "Pain Relief":        "止痛",
+  "Allergy":            "抗过敏",
+  "Cold & Flu":         "感冒流感",
+  "Digestive Health":   "消化",
+  "Skin":               "皮肤",
+  "Sleep":              "睡眠",
+  "Vitamins":           "维生素",
+  "Chronic Conditions": "慢性病",
+};
+
 // Drug name EN → ZH translations
 export const DRUG_NAME_ZH: Record<string, string> = {
   ibuprofen: "布洛芬",
