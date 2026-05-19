@@ -110,7 +110,7 @@ export function MedicationCalendar() {
   useEffect(() => saveJSON(SCHEDULE_KEY, schedules), [schedules]);
   useEffect(() => saveJSON(DOSE_LOG_KEY, doseLogs), [doseLogs]);
 
-  const selectedDateObj = new Date(`${selectedDate}T00:00:00`);
+  const selectedDateObj = useMemo(() => new Date(`${selectedDate}T00:00:00`), [selectedDate]);
   const visibleDates = useMemo(() => getDates(viewMode, selectedDateObj), [viewMode, selectedDateObj]);
 
   const dosesByDate = useMemo(() => {

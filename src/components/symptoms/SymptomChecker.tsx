@@ -233,12 +233,7 @@ export function SymptomChecker() {
   }, [hasInput, language, selectedSymptoms, symptomInput, t.symptoms.chips]);
 
   useEffect(() => {
-    if (!hasInput) {
-      setHasChecked(false);
-      setAiAdvice(null);
-      setAiError(null);
-      return;
-    }
+    if (!hasInput) return;
 
     const timer = window.setTimeout(() => {
       setHasChecked(true);

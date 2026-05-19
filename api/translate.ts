@@ -68,16 +68,19 @@ function normalizeBody(body: unknown): TranslateRequest {
   return {};
 }
 
-function extractOutputText(data: any): string {
-  if (typeof data?.output_text === "string") {
-    return data.output_text;
+function extractOutputText(data: unknown): string {
+  const d = data as Record<string, unknown>;
+  if (typeof d?.output_text === "string") {
+    return d.output_text;
   }
 
   const parts: string[] = [];
-  for (const item of data?.output ?? []) {
-    for (const content of item?.content ?? []) {
-      if (typeof content?.text === "string") {
-        parts.push(content.text);
+  for (const item of (d?.output as unknown[] | undefined) ?? []) {
+    const it = item as Record<string, unknown>;
+    for (const content of (it?.content as unknown[] | undefined) ?? []) {
+      const ct = content as Record<string, unknown>;
+      if (typeof ct?.text === "string") {
+        parts.push(ct.text);
       }
     }
   }

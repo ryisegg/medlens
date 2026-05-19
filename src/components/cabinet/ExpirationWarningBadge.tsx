@@ -1,8 +1,4 @@
-interface Props {
-  expirationDate?: string;
-  language: string;
-}
-
+// eslint-disable-next-line react-refresh/only-export-components
 export function getExpirationState(expirationDate?: string) {
   if (!expirationDate) return "none" as const;
   const today = new Date();
@@ -11,6 +7,11 @@ export function getExpirationState(expirationDate?: string) {
   if (days < 0) return "expired" as const;
   if (days <= 30) return "soon" as const;
   return "ok" as const;
+}
+
+interface Props {
+  expirationDate?: string;
+  language: string;
 }
 
 export function ExpirationWarningBadge({ expirationDate, language }: Props) {
