@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { DoseStatus, MedicationSchedule } from "../../types";
 import { useApp } from "../../context/AppContext";
-import { useMedicationStore } from "../../hooks/useMedicationStore";
+import { useMedication } from "../../context/MedicationContext";
 import { AddMedicationScheduleForm } from "./AddMedicationScheduleForm";
 import { DoseCard } from "./DoseCard";
 
@@ -91,7 +91,7 @@ export function MedicationCalendar() {
     addSchedule,
     removeSchedule,
     updateDoseLog,
-  } = useMedicationStore();
+  } = useMedication();
   const [viewMode, setViewMode] = useState<ViewMode>("day");
   const [selectedDate, setSelectedDate] = useState(todayIso());
   const [showForm, setShowForm] = useState(false);

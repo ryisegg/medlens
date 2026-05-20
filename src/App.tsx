@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import { useApp } from "./context/AppContext";
 import { AuthProvider } from "./context/AuthContext";
+import { MedicationProvider } from "./context/MedicationContext";
 import { TopBar } from "./components/layout/TopBar";
 import { TabBar } from "./components/layout/TabBar";
 import { HomePage } from "./pages/HomePage";
@@ -76,11 +77,13 @@ function AppShell() {
 
 function App() {
   return (
-    <AppProvider>
-      <AuthProvider>
-        <AppShell />
-      </AuthProvider>
-    </AppProvider>
+    <AuthProvider>
+      <MedicationProvider>
+        <AppProvider>
+          <AppShell />
+        </AppProvider>
+      </MedicationProvider>
+    </AuthProvider>
   );
 }
 

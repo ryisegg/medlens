@@ -27,7 +27,7 @@ export function setCors(res: ApiResponse): void {
   const origin = process.env.ALLOWED_ORIGIN?.trim();
   res.setHeader("Access-Control-Allow-Origin", origin || "https://ryisegg.github.io");
   res.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Vary", "Origin");
 }
 

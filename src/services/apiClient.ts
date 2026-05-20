@@ -2,12 +2,19 @@ function trimTrailingSlash(value: string) {
   return value.replace(/\/+$/, "");
 }
 
+/** Production Vercel API (also set in GitHub repo variable VITE_API_BASE_URL). */
+export const DEFAULT_API_BASE_URL = "https://medlens-mu.vercel.app";
+
 export function getApiBaseUrl() {
   const configured = import.meta.env.VITE_API_BASE_URL as string | undefined;
-  if (configured) return trimTrailingSlash(configured);
+  if (configured?.trim()) return trimTrailingSlash(configured.trim());
 
   if (typeof window !== "undefined" && window.location.hostname.endsWith("github.io")) {
-    return "";
+    return DEFAULT_API_BASE_URL;
+  }
+
+  if (import.meta.env.DEV) {
+    return DEFAULT_API_BASE_URL;
   }
 
   return "";
@@ -19,7 +26,7 @@ export function getApiUrl(path: string, legacyEndpoint?: string) {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   const baseUrl = getApiBaseUrl();
 
-  if (!baseUrl && typeof window !== "undefined" && window.location.hostname.endsWith("github.io")) {
+  if (!baseUrl) {
     return "";
   }
 

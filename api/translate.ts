@@ -46,7 +46,7 @@ const translationSchema = {
   },
 } as const;
 
-import { enforceRateLimit, setCors } from "./_lib/guard";
+import { enforceRateLimit, setCors } from "./lib/guard";
 
 function normalizeBody(body: unknown): TranslateRequest {
   if (typeof body === "string") {

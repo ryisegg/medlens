@@ -27,6 +27,7 @@ import { detectRedFlags, getSymptomSuggestions, CHIP_SYMPTOM_KEYWORDS } from "..
 import { translateDrugNameOnly } from "../utils/medicalTranslation";
 import { runPillIdentifier } from "../data/identifier";
 import { loadJSON, loadStr, saveJSON, removeKey } from "../lib/storage";
+import { SYNC_APPLIED_EVENT } from "../lib/syncEvents";
 
 const AppContext = createContext<AppContextValue | null>(null);
 
@@ -100,6 +101,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
     void ensureExpandedLoaded();
     return subscribeCatalog(() => setCatalogVersion((v) => v + 1));
   }, []);
+
+  const reloadFromStorage = useCallback(() => {
+    setRecentlyViewed(loadRecentlyViewed());
+    setFavorites(loadFavorites());
+    setReminders(loadReminders());
+    setSavedApiDrugs(loadSavedApiDrugs());
+    setApiHistory(loadApiHistory());
+    setRecentSearches(loadRecentSearches());
+    setHealthProfile(loadHealthProfile());
+  }, []);
+
+  useEffect(() => {
+    const handler = () => reloadFromStorage();
+    window.addEventListener(SYNC_APPLIED_EVENT, handler);
+    return () => window.removeEventListener(SYNC_APPLIED_EVENT, handler);
+  }, [reloadFromStorage]);
 
   // ── Language ──────────────────────────────────────────────────────────────
   const setLanguage = useCallback((lang: Language) => {

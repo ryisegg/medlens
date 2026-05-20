@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import type { CabinetItem, MedicationSchedule } from "../../types";
 import { useApp } from "../../context/AppContext";
-import { useMedicationStore } from "../../hooks/useMedicationStore";
+import { useMedication } from "../../context/MedicationContext";
 import { CabinetItemCard } from "./CabinetItemCard";
 import { getExpirationState } from "./ExpirationWarningBadge";
 
@@ -27,7 +27,7 @@ const EMPTY_ITEM: CabinetItem = {
 export function MedicineCabinet() {
   const { language } = useApp();
   const isZh = language === "zh";
-  const { cabinetItems, schedules, upsertCabinetItem, removeCabinetItem, addSchedule } = useMedicationStore();
+  const { cabinetItems, schedules, upsertCabinetItem, removeCabinetItem, addSchedule } = useMedication();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [editing, setEditing] = useState<CabinetItem | null>(null);

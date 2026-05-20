@@ -1,5 +1,6 @@
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
+import { supabaseConfigured } from "../../services/supabase";
 import { CABINET_KEY, SCHEDULE_KEY } from "../../lib/medicationKeys";
 import { loadJSON } from "../../lib/storage";
 import type { MedicationSchedule, CabinetItem } from "../../types";
@@ -11,7 +12,7 @@ interface Props {
 
 export function ProfileHeader({ p }: Props) {
   const { favorites, savedApiDrugs } = useApp();
-  const { user, configured } = useAuth();
+  const { user, syncStatus, lastSyncedAt } = useAuth();
 
   const scheduleCount = loadJSON<MedicationSchedule[]>(SCHEDULE_KEY, []).length;
   const cabinetCount = loadJSON<CabinetItem[]>(CABINET_KEY, []).length;
@@ -49,7 +50,15 @@ export function ProfileHeader({ p }: Props) {
               {p.planFree}
             </span>
             <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold">
-              {user && configured ? p.syncSignedIn : p.syncLocalOnly}
+              {!supabaseConfigured
+                ? p.syncLocalOnly
+                : user
+                  ? syncStatus === "syncing"
+                    ? p.syncInProgress
+                    : lastSyncedAt
+                      ? p.lastSynced
+                      : p.syncSignedIn
+                  : p.syncLocalOnly}
             </span>
           </div>
         </div>
