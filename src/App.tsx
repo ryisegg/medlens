@@ -17,6 +17,7 @@ import { CabinetPage } from "./pages/CabinetPage";
 import { SafetyPage } from "./pages/SafetyPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { OnboardingPage } from "./pages/OnboardingPage";
+import { TCMHerbDetailPage } from "./pages/TCMHerbDetailPage";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -67,6 +68,7 @@ function AppShell() {
           <Route path="/cabinet" element={<CabinetPage />} />
           <Route path="/safety" element={<SafetyPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/tcm/:id" element={<TCMHerbDetailPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

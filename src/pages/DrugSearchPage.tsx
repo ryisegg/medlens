@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { ensureExpandedLoaded } from "../data/catalog";
 import { useNavigate } from "react-router-dom";
@@ -14,6 +14,9 @@ import { searchRxNorm } from "../services/rxnormApi";
 import { fetchAiDrugSearch } from "../services/aiDrugSearch";
 import type { AiDrugSuggestion } from "../services/aiDrugSearch";
 import { DRUG_CATEGORY_ZH, translateDrugNameOnly, lookupZhForDrugName } from "../utils/medicalTranslation";
+import { TCMHerbCard } from "../components/tcm/TCMHerbCard";
+import { searchTCMHerbs, TCM_CATEGORIES, TCM_CATEGORY_EN } from "../data/tcmHerbs";
+import type { TCMCategory } from "../types/tcm";
 
 const CATEGORY_EMOJIS: Record<DrugCategory | "All", string> = {
   All: "⊕", "Pain Relief": "💊", Allergy: "🌿", "Cold & Flu": "🤧",
@@ -63,6 +66,8 @@ export function DrugSearchPage() {
     addToRecentSearches, toggleSavedApiDrug, isApiDrugSaved,
   } = useApp();
   const t = getTranslations(language);
+  const [searchMode, setSearchMode] = useState<'western' | 'tcm'>('western');
+  const [tcmCategory, setTcmCategory] = useState<TCMCategory | 'All'>('All');
   const liveQuery = searchQuery.trim();
   const debouncedAiQuery = useDebouncedValue(liveQuery, 600);
   const q = liveQuery.toLowerCase();
@@ -126,16 +131,79 @@ export function DrugSearchPage() {
     { value: "Rx", label: t.search.rx },
   ];
 
+  const tcmResults = searchTCMHerbs(searchQuery, tcmCategory);
+  const isZh = language === 'zh';
+
   return (
     <div className="space-y-0">
       <div className="sticky top-12 z-30 bg-white px-4 pt-3 pb-3 shadow-sm dark:bg-[#1c1c1e] dark:shadow-none border-b border-slate-100 dark:border-[#2c2c2e]">
+        {/* 西药 / 中药 mode toggle */}
+        <div className="mb-3 flex rounded-xl bg-slate-100 p-1 dark:bg-[#2c2c2e]">
+          <button
+            type="button"
+            onClick={() => setSearchMode('western')}
+            className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${
+              searchMode === 'western'
+                ? 'bg-white text-slate-900 shadow-sm dark:bg-black dark:text-white'
+                : 'text-slate-500 dark:text-[#8e8e93]'
+            }`}
+          >
+            {isZh ? '💊 西药' : '💊 Western'}
+          </button>
+          <button
+            type="button"
+            onClick={() => setSearchMode('tcm')}
+            className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${
+              searchMode === 'tcm'
+                ? 'bg-white text-slate-900 shadow-sm dark:bg-black dark:text-white'
+                : 'text-slate-500 dark:text-[#8e8e93]'
+            }`}
+          >
+            {isZh ? '🌿 中药' : '🌿 TCM Herbs'}
+          </button>
+        </div>
+
         <AutocompleteSearch
           value={searchQuery}
           onChange={setSearchQuery}
-          placeholder={t.search.placeholder}
+          placeholder={searchMode === 'tcm'
+            ? (isZh ? '搜索药材名称、功效、主治…' : 'Search herb name, function, indication…')
+            : t.search.placeholder}
           autoFocus
         />
 
+        {searchMode === 'tcm' ? (
+          <div className="mt-3 -mx-4 overflow-x-auto px-4 pb-0.5">
+            <div className="flex gap-2 w-max">
+              <button
+                type="button"
+                onClick={() => setTcmCategory('All')}
+                className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                  tcmCategory === 'All'
+                    ? 'bg-emerald-600 text-white shadow-sm dark:bg-emerald-500'
+                    : 'bg-slate-100 text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]'
+                }`}
+              >
+                {isZh ? '全部' : 'All'}
+              </button>
+              {TCM_CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setTcmCategory(tcmCategory === cat ? 'All' : cat)}
+                  className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition ${
+                    tcmCategory === cat
+                      ? 'bg-emerald-600 text-white shadow-sm dark:bg-emerald-500'
+                      : 'bg-slate-100 text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]'
+                  }`}
+                >
+                  {isZh ? cat : TCM_CATEGORY_EN[cat]}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+        <>
         <div className="mt-3 flex gap-2">
           {otcOptions.map(({ value, label }) => (
             <button
@@ -172,16 +240,66 @@ export function DrugSearchPage() {
             ))}
           </div>
         </div>
+        </>
+        )}
       </div>
 
+      {/* TCM mode results */}
+      {searchMode === 'tcm' && (
+        <div className="px-4 pt-3 pb-6 space-y-3">
+          <p className="text-xs font-medium text-slate-400 dark:text-[#636366]">
+            {tcmResults.length}{isZh ? ' 味药材' : ' herbs found'}
+          </p>
+          {tcmResults.length === 0 ? (
+            <div className="rounded-3xl bg-white p-8 text-center shadow-sm dark:bg-[#1c1c1e]">
+              <div className="text-4xl mb-3">🌿</div>
+              <p className="font-semibold text-slate-700 dark:text-white">
+                {isZh ? '未找到匹配药材' : 'No herbs found'}
+              </p>
+              <p className="mt-1 text-sm text-slate-400 dark:text-[#636366]">
+                {isZh ? '试试其他名称、功效或分类' : 'Try a different name, function, or category'}
+              </p>
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(''); setTcmCategory('All'); }}
+                className="mt-4 rounded-full bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
+              >
+                {isZh ? '清除筛选' : 'Clear filters'}
+              </button>
+            </div>
+          ) : (
+            tcmResults.map(herb => (
+              <TCMHerbCard
+                key={herb.id}
+                herb={herb}
+                language={language}
+                onClick={() => navigate(`/tcm/${herb.id}`)}
+              />
+            ))
+          )}
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-center gap-2 dark:bg-amber-950/30 dark:border-amber-800">
+            <span className="text-lg flex-shrink-0">⚕️</span>
+            <p className="text-xs text-amber-800 font-medium dark:text-amber-300">
+              {isZh
+                ? '中药信息仅供参考，使用前请咨询执业中医师。'
+                : 'TCM information is for educational purposes only. Consult a licensed practitioner before use.'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Western drug results (hidden in TCM mode) */}
+      {searchMode === 'western' && (
       <div className="px-4 pt-3 pb-1">
         <p className="text-xs text-slate-400 font-medium dark:text-[#636366]">
           {totalResults}{" "}
           {totalResults === 1 ? t.search.found : t.search.foundPlural}
         </p>
       </div>
+      )}
 
       {/* Local curated results */}
+      {searchMode === 'western' && (
       <div className="px-4 pb-4">
         {localDrugs.length === 0 && !searchQuery ? (
           <div className="space-y-3 mt-1">
@@ -221,9 +339,10 @@ export function DrugSearchPage() {
           </div>
         ) : null}
       </div>
+      )}
 
       {/* AI Search — primary fallback when no local results */}
-      {showAiSearch && (
+      {searchMode === 'western' && showAiSearch && (
         <div className="px-4 pb-4">
           <div className="mb-2 flex items-center gap-2 px-1">
             <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">AI</span>
@@ -301,7 +420,7 @@ export function DrugSearchPage() {
       )}
 
       {/* RxNorm live results */}
-      {visibleLiveResults.length > 0 && (
+      {searchMode === 'western' && visibleLiveResults.length > 0 && (
         <div className="px-4 pb-4">
           <p className="mb-2 px-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
             {liveTitle}
@@ -355,12 +474,14 @@ export function DrugSearchPage() {
         </div>
       )}
 
+      {searchMode === 'western' && (
       <div className="px-4 pb-6">
         <div className="rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-center gap-2 dark:bg-amber-950/30 dark:border-amber-800">
           <span className="text-lg flex-shrink-0">⚕️</span>
           <p className="text-xs text-amber-800 font-medium dark:text-amber-300">{t.search.warning}</p>
         </div>
       </div>
+      )}
     </div>
   );
 }
