@@ -71,7 +71,7 @@ const adviceSchema = {
   },
 } as const;
 
-import { enforceRateLimit, setCors } from "./lib/guard";
+import { enforceRateLimit, setCors } from "../lib/apiGuard";
 
 function normalizeBody(body: unknown): SymptomAdviceRequest {
   if (typeof body === "string") {

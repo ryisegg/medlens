@@ -1,11 +1,11 @@
-type ApiResponse = {
+export type ApiResponse = {
   setHeader: (name: string, value: string) => void;
   status: (code: number) => ApiResponse;
   json: (body: unknown) => void;
   end: () => void;
 };
 
-type ApiRequest = {
+export type ApiRequest = {
   method?: string;
   headers?: Record<string, string | string[] | undefined>;
 };
@@ -31,11 +31,10 @@ export function setCors(res: ApiResponse): void {
   res.setHeader("Vary", "Origin");
 }
 
-export function checkRateLimit(
-  ip: string,
-  max = Number(process.env.API_RATE_LIMIT_MAX ?? 30),
-  windowMs = Number(process.env.API_RATE_LIMIT_WINDOW_MS ?? 60_000),
-): { allowed: boolean; retryAfterSec: number } {
+export function enforceRateLimit(req: ApiRequest, res: ApiResponse): boolean {
+  const ip = getClientIp(req);
+  const max = Number(process.env.API_RATE_LIMIT_MAX ?? 30);
+  const windowMs = Number(process.env.API_RATE_LIMIT_WINDOW_MS ?? 60_000);
   const now = Date.now();
   let bucket = buckets.get(ip);
   if (!bucket || now > bucket.resetAt) {
@@ -43,15 +42,8 @@ export function checkRateLimit(
     buckets.set(ip, bucket);
   }
   bucket.count += 1;
-  const allowed = bucket.count <= max;
-  const retryAfterSec = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
-  return { allowed, retryAfterSec };
-}
-
-export function enforceRateLimit(req: ApiRequest, res: ApiResponse): boolean {
-  const ip = getClientIp(req);
-  const { allowed, retryAfterSec } = checkRateLimit(ip);
-  if (!allowed) {
+  if (bucket.count > max) {
+    const retryAfterSec = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
     res.setHeader("Retry-After", String(retryAfterSec));
     res.status(429).json({
       error: "Too many requests. Please try again later.",

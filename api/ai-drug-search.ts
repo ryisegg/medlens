@@ -51,7 +51,7 @@ const drugSearchSchema = {
   },
 } as const;
 
-import { enforceRateLimit, setCors } from "./lib/guard";
+import { enforceRateLimit, setCors } from "../lib/apiGuard";
 
 function normalizeBody(body: unknown): AiDrugSearchRequest {
   if (typeof body === "string") {
