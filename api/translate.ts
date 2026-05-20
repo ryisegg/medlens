@@ -1,6 +1,9 @@
+import { enforceRateLimit, setCors } from "../lib/apiGuard";
+
 type ApiRequest = {
   method?: string;
   body?: unknown;
+  headers?: Record<string, string | string[] | undefined>;
 };
 
 type ApiResponse = {
@@ -45,8 +48,6 @@ const translationSchema = {
     },
   },
 } as const;
-
-import { enforceRateLimit, setCors } from "../lib/apiGuard";
 
 function normalizeBody(body: unknown): TranslateRequest {
   if (typeof body === "string") {

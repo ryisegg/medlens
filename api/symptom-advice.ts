@@ -1,6 +1,9 @@
+import { enforceRateLimit, setCors } from "../lib/apiGuard";
+
 type ApiRequest = {
   method?: string;
   body?: unknown;
+  headers?: Record<string, string | string[] | undefined>;
 };
 
 type ApiResponse = {
@@ -70,8 +73,6 @@ const adviceSchema = {
     },
   },
 } as const;
-
-import { enforceRateLimit, setCors } from "../lib/apiGuard";
 
 function normalizeBody(body: unknown): SymptomAdviceRequest {
   if (typeof body === "string") {
