@@ -5,8 +5,13 @@ import { useAuth } from "../context/AuthContext";
 import { getTranslations } from "../i18n";
 import { lookupZhDrug } from "../data/zhDrugNames";
 import { getDrugById } from "../data/catalog";
+import { ProfileHeader } from "../components/profile/ProfileHeader";
+import { QuickLinks } from "../components/profile/QuickLinks";
+import { ViewHistoryCard } from "../components/profile/ViewHistoryCard";
+import { DataPrivacyCard } from "../components/profile/DataPrivacyCard";
+import type { Translations } from "../i18n";
 
-type P = ReturnType<typeof getTranslations>["profile"];
+type P = Translations["profile"];
 
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
@@ -18,7 +23,7 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 
 function SectionTitle({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="flex items-center justify-between mb-3">
+    <div className="mb-3 flex items-center justify-between">
       <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
         {children}
       </p>
@@ -27,39 +32,6 @@ function SectionTitle({ children, action }: { children: React.ReactNode; action?
   );
 }
 
-function Row({ label, children, border = true }: { label: string; children: React.ReactNode; border?: boolean }) {
-  return (
-    <div className={`flex items-center justify-between py-2.5 ${border ? "border-b border-slate-100 dark:border-[#2c2c2e]" : ""}`}>
-      <span className="text-sm text-slate-700 dark:text-[#ebebf5cc]">{label}</span>
-      <div className="flex items-center gap-2">{children}</div>
-    </div>
-  );
-}
-
-function SegmentedControl<T extends string>({
-  value, onChange, options,
-}: { value: T; onChange: (v: T) => void; options: { value: T; label: string }[] }) {
-  return (
-    <div className="flex overflow-hidden rounded-xl border border-slate-200 dark:border-[#3a3a3c]">
-      {options.map(({ value: v, label }) => (
-        <button
-          key={v}
-          type="button"
-          onClick={() => onChange(v)}
-          className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
-            value === v
-              ? "bg-blue-600 text-white dark:bg-[#0a84ff]"
-              : "text-slate-500 dark:text-[#8e8e93]"
-          }`}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-// ─── Tag list with add/remove ─────────────────────────────────────────────────
 function TagList({
   items, onAdd, onRemove, placeholder, addLabel,
 }: {
@@ -121,7 +93,6 @@ function TagList({
   );
 }
 
-// ─── Account Card ─────────────────────────────────────────────────────────────
 function AccountCard({ p }: { p: P }) {
   const { user, loading, configured, signInWithEmail, signInWithGoogle, signOut } = useAuth();
   const [email, setEmail] = useState("");
@@ -131,10 +102,12 @@ function AccountCard({ p }: { p: P }) {
 
   async function handleMagicLink() {
     if (!email.trim()) return;
-    setWorking(true); setError(null);
+    setWorking(true);
+    setError(null);
     const { error: err } = await signInWithEmail(email.trim());
     setWorking(false);
-    if (err) { setError(err); } else { setSent(true); }
+    if (err) setError(err);
+    else setSent(true);
   }
 
   async function handleGoogle() {
@@ -145,7 +118,11 @@ function AccountCard({ p }: { p: P }) {
   }
 
   if (loading) {
-    return <Card><div className="h-10 animate-pulse rounded-xl bg-slate-100 dark:bg-[#2c2c2e]" /></Card>;
+    return (
+      <Card>
+        <div className="h-24 animate-pulse rounded-xl bg-slate-100 dark:bg-[#2c2c2e]" />
+      </Card>
+    );
   }
 
   if (!configured) {
@@ -158,19 +135,12 @@ function AccountCard({ p }: { p: P }) {
   }
 
   if (user) {
-    const initials = (user.email ?? "?").slice(0, 2).toUpperCase();
     return (
       <Card>
         <SectionTitle>{p.account}</SectionTitle>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white dark:bg-[#0a84ff]">
-            {initials}
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs text-slate-400 dark:text-[#636366]">{p.signedInAs}</p>
-            <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{user.email}</p>
-          </div>
-        </div>
+        <p className="mb-3 text-xs leading-relaxed text-slate-500 dark:text-[#8e8e93]">
+          {p.syncComingSoon}
+        </p>
         <button
           type="button"
           onClick={() => void signOut()}
@@ -185,7 +155,6 @@ function AccountCard({ p }: { p: P }) {
   return (
     <Card>
       <SectionTitle>{p.account}</SectionTitle>
-      <p className="mb-4 text-sm text-slate-500 dark:text-[#8e8e93]">{p.signInDesc}</p>
       {sent ? (
         <div className="rounded-xl bg-green-50 px-4 py-3 text-sm font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
           {p.magicLinkSent}
@@ -214,11 +183,11 @@ function AccountCard({ p }: { p: P }) {
             disabled={working}
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 py-2.5 text-sm font-semibold text-slate-700 dark:border-[#3a3a3c] dark:text-white"
           >
-            <svg className="h-4 w-4" viewBox="0 0 24 24">
-              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden>
+              <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+              <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+              <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+              <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
             </svg>
             {p.signInWithGoogle}
           </button>
@@ -229,12 +198,13 @@ function AccountCard({ p }: { p: P }) {
   );
 }
 
-// ─── My Medications (local favorites + API bookmarks combined) ────────────────
 function MyMedicationsCard({ p }: { p: P }) {
   const { favorites, toggleFavorite, savedApiDrugs, toggleSavedApiDrug, language } = useApp();
   const navigate = useNavigate();
 
-  const localFavDrugs = favorites.map((id) => getDrugById(id)).filter(Boolean) as ReturnType<typeof getDrugById>[];
+  const localFavDrugs = favorites
+    .map((id) => getDrugById(id))
+    .filter(Boolean) as NonNullable<ReturnType<typeof getDrugById>>[];
 
   const hasAny = localFavDrugs.length > 0 || savedApiDrugs.length > 0;
 
@@ -245,24 +215,31 @@ function MyMedicationsCard({ p }: { p: P }) {
         <p className="text-sm text-slate-400 dark:text-[#636366]">{p.savedMedsEmpty}</p>
       ) : (
         <div className="space-y-2">
-          {/* Local curated favorites */}
-          {(localFavDrugs as NonNullable<typeof localFavDrugs[0]>[]).map((drug) => {
+          {localFavDrugs.map((drug) => {
             const zh = lookupZhDrug(drug.genericName ?? drug.name);
-            const displayName = language === "zh" && (drug.chineseName ?? zh?.genericZh)
-              ? (drug.chineseName ?? zh?.genericZh ?? drug.name)
-              : drug.name;
+            const displayName =
+              language === "zh" && (drug.chineseName ?? zh?.genericZh)
+                ? (drug.chineseName ?? zh?.genericZh ?? drug.name)
+                : drug.name;
             return (
-              <div key={drug.id} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 dark:bg-[#2c2c2e]">
+              <div
+                key={drug.id}
+                className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 dark:bg-[#2c2c2e]"
+              >
                 <button
                   type="button"
                   className="min-w-0 flex-1 text-left"
                   onClick={() => navigate(`/drugs/${drug.id}`)}
                 >
-                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{displayName}</p>
+                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                    {displayName}
+                  </p>
                   {displayName !== drug.name && (
                     <p className="text-xs text-slate-400 dark:text-[#636366]">{drug.name}</p>
                   )}
-                  <p className="text-xs text-slate-400 dark:text-[#636366]">{drug.otcOrRx} · {language === "zh" ? "本地收录" : "local"}</p>
+                  <p className="text-xs text-slate-400 dark:text-[#636366]">
+                    {drug.otcOrRx} · {language === "zh" ? "本地收录" : "local"}
+                  </p>
                 </button>
                 <button
                   type="button"
@@ -277,18 +254,22 @@ function MyMedicationsCard({ p }: { p: P }) {
               </div>
             );
           })}
-          {/* API bookmarks */}
           {savedApiDrugs.map((drug) => {
             const zh = lookupZhDrug(drug.genericName ?? drug.name);
             const displayName = language === "zh" && zh ? zh.genericZh : drug.name;
             return (
-              <div key={drug.name} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 dark:bg-[#2c2c2e]">
+              <div
+                key={drug.name}
+                className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 dark:bg-[#2c2c2e]"
+              >
                 <button
                   type="button"
                   className="min-w-0 flex-1 text-left"
                   onClick={() => navigate(`/drugs/api/${encodeURIComponent(drug.name)}`)}
                 >
-                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{displayName}</p>
+                  <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
+                    {displayName}
+                  </p>
                   {displayName !== drug.name && (
                     <p className="text-xs text-slate-400 dark:text-[#636366]">{drug.name}</p>
                   )}
@@ -313,15 +294,9 @@ function MyMedicationsCard({ p }: { p: P }) {
   );
 }
 
-// ─── Recent Searches ──────────────────────────────────────────────────────────
 function RecentSearchesCard({ p }: { p: P }) {
   const { recentSearches, clearRecentSearches, setSearchQuery } = useApp();
   const navigate = useNavigate();
-
-  function handleClick(query: string) {
-    setSearchQuery(query);
-    navigate("/drugs");
-  }
 
   return (
     <Card>
@@ -348,7 +323,10 @@ function RecentSearchesCard({ p }: { p: P }) {
             <button
               key={query}
               type="button"
-              onClick={() => handleClick(query)}
+              onClick={() => {
+                setSearchQuery(query);
+                navigate("/drugs");
+              }}
               className="flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1.5 text-sm text-slate-700 transition hover:bg-blue-50 hover:text-blue-700 dark:bg-[#2c2c2e] dark:text-[#c7c7cc] dark:hover:bg-blue-950/40 dark:hover:text-[#0a84ff]"
             >
               <svg className="h-3 w-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -363,42 +341,8 @@ function RecentSearchesCard({ p }: { p: P }) {
   );
 }
 
-// ─── Settings ─────────────────────────────────────────────────────────────────
-function SettingsCard({ p }: { p: P }) {
-  const { language, setLanguage, isDark, toggleDark, region, setRegion } = useApp();
-
-  return (
-    <Card>
-      <SectionTitle>{p.settings}</SectionTitle>
-      <Row label={p.language}>
-        <SegmentedControl
-          value={language}
-          onChange={setLanguage}
-          options={[{ value: "zh", label: "中文" }, { value: "en", label: "EN" }]}
-        />
-      </Row>
-      <Row label={p.region}>
-        <SegmentedControl
-          value={region}
-          onChange={setRegion}
-          options={[{ value: "US", label: p.regionUS }, { value: "CN", label: p.regionCN }]}
-        />
-      </Row>
-      <Row label={p.appearance} border={false}>
-        <SegmentedControl
-          value={isDark ? "dark" : "light"}
-          onChange={(v) => { if ((v === "dark") !== isDark) toggleDark(); }}
-          options={[{ value: "light", label: p.light }, { value: "dark", label: p.dark }]}
-        />
-      </Row>
-    </Card>
-  );
-}
-
-// ─── Health Safety Profile ────────────────────────────────────────────────────
 function HealthProfileCard({ p }: { p: P }) {
   const { healthProfile, updateHealthProfile } = useApp();
-  const [open, setOpen] = useState(false);
 
   function addItem(field: keyof typeof healthProfile, val: string) {
     updateHealthProfile({ [field]: [...healthProfile[field], val] });
@@ -407,80 +351,72 @@ function HealthProfileCard({ p }: { p: P }) {
     updateHealthProfile({ [field]: healthProfile[field].filter((v) => v !== val) });
   }
 
-  const totalItems = healthProfile.allergies.length + healthProfile.conditions.length + healthProfile.currentMeds.length;
+  const totalItems =
+    healthProfile.allergies.length +
+    healthProfile.conditions.length +
+    healthProfile.currentMeds.length;
 
   return (
     <Card>
-      <button
-        type="button"
-        className="flex w-full items-center justify-between"
-        onClick={() => setOpen((o) => !o)}
-      >
-        <div className="flex items-center gap-2">
-          <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
-            {p.healthProfile}
+      <div className="mb-3 flex items-center gap-2">
+        <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
+          {p.healthProfile}
+        </p>
+        {totalItems > 0 && (
+          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+            {totalItems}
+          </span>
+        )}
+      </div>
+
+      <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-950/30">
+        <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-300">
+          ⚠ {p.healthProfileDisclaimer}
+        </p>
+      </div>
+
+      <div className="mt-4 space-y-4">
+        <div>
+          <p className="mb-2 text-xs font-semibold text-slate-600 dark:text-[#8e8e93]">
+            🚫 {p.allergies}
           </p>
-          {totalItems > 0 && (
-            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-              {totalItems}
-            </span>
-          )}
+          <TagList
+            items={healthProfile.allergies}
+            onAdd={(v) => addItem("allergies", v)}
+            onRemove={(v) => removeItem("allergies", v)}
+            placeholder={p.itemPlaceholder}
+            addLabel={p.addItem}
+          />
         </div>
-        <svg
-          className={`h-4 w-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`}
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-        </svg>
-      </button>
-
-      {open && (
-        <div className="mt-4 space-y-4">
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-950/30">
-            <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-300">
-              ⚠ {p.healthProfileDisclaimer}
-            </p>
-          </div>
-
-          <div>
-            <p className="mb-2 text-xs font-semibold text-slate-600 dark:text-[#8e8e93]">🚫 {p.allergies}</p>
-            <TagList
-              items={healthProfile.allergies}
-              onAdd={(v) => addItem("allergies", v)}
-              onRemove={(v) => removeItem("allergies", v)}
-              placeholder={p.itemPlaceholder}
-              addLabel={p.addItem}
-            />
-          </div>
-
-          <div>
-            <p className="mb-2 text-xs font-semibold text-slate-600 dark:text-[#8e8e93]">🏥 {p.conditions}</p>
-            <TagList
-              items={healthProfile.conditions}
-              onAdd={(v) => addItem("conditions", v)}
-              onRemove={(v) => removeItem("conditions", v)}
-              placeholder={p.itemPlaceholder}
-              addLabel={p.addItem}
-            />
-          </div>
-
-          <div>
-            <p className="mb-2 text-xs font-semibold text-slate-600 dark:text-[#8e8e93]">💊 {p.currentMeds}</p>
-            <TagList
-              items={healthProfile.currentMeds}
-              onAdd={(v) => addItem("currentMeds", v)}
-              onRemove={(v) => removeItem("currentMeds", v)}
-              placeholder={p.itemPlaceholder}
-              addLabel={p.addItem}
-            />
-          </div>
+        <div>
+          <p className="mb-2 text-xs font-semibold text-slate-600 dark:text-[#8e8e93]">
+            🏥 {p.conditions}
+          </p>
+          <TagList
+            items={healthProfile.conditions}
+            onAdd={(v) => addItem("conditions", v)}
+            onRemove={(v) => removeItem("conditions", v)}
+            placeholder={p.itemPlaceholder}
+            addLabel={p.addItem}
+          />
         </div>
-      )}
+        <div>
+          <p className="mb-2 text-xs font-semibold text-slate-600 dark:text-[#8e8e93]">
+            💊 {p.currentMeds}
+          </p>
+          <TagList
+            items={healthProfile.currentMeds}
+            onAdd={(v) => addItem("currentMeds", v)}
+            onRemove={(v) => removeItem("currentMeds", v)}
+            placeholder={p.itemPlaceholder}
+            addLabel={p.addItem}
+          />
+        </div>
+      </div>
     </Card>
   );
 }
 
-// ─── Safety Accordion ─────────────────────────────────────────────────────────
 function SafetyAccordion({ p }: { p: P }) {
   const [open, setOpen] = useState(false);
 
@@ -496,7 +432,10 @@ function SafetyAccordion({ p }: { p: P }) {
         </p>
         <svg
           className={`h-4 w-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`}
-          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
         </svg>
@@ -506,14 +445,15 @@ function SafetyAccordion({ p }: { p: P }) {
           <div className="rounded-xl bg-red-50 px-4 py-3 dark:bg-red-950/50">
             <p className="text-sm font-bold text-red-700 dark:text-red-300">{p.emergencyNumbers}</p>
           </div>
-          <p className="text-xs leading-relaxed text-slate-500 dark:text-[#636366]">{p.disclaimerShort}</p>
+          <p className="text-xs leading-relaxed text-slate-500 dark:text-[#636366]">
+            {p.disclaimerShort}
+          </p>
         </div>
       )}
     </Card>
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
 export function ProfilePage() {
   const { language } = useApp();
   const t = getTranslations(language);
@@ -525,11 +465,14 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-3 px-4 py-4">
+      <ProfileHeader p={p} />
       <AccountCard p={p} />
-      <MyMedicationsCard p={p} />
-      <RecentSearchesCard p={p} />
-      <SettingsCard p={p} />
+      <QuickLinks p={p} />
       <HealthProfileCard p={p} />
+      <MyMedicationsCard p={p} />
+      <ViewHistoryCard p={p} />
+      <RecentSearchesCard p={p} />
+      <DataPrivacyCard p={p} />
       <SafetyAccordion p={p} />
       <div className="h-2" />
     </div>
