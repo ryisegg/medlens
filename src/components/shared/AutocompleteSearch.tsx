@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { searchRxNorm, getSpellingSuggestions } from "../../services/rxnormApi";
-import { searchDrugs } from "../../data/drugs";
+import { searchDrugs } from "../../data/catalog";
 import { useApp } from "../../context/AppContext";
 import { translateDrugNameOnly } from "../../utils/medicalTranslation";
 import { DropdownSkeleton } from "./DrugCardSkeleton";

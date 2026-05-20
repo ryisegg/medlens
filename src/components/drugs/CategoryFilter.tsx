@@ -1,5 +1,5 @@
 import type { DrugCategory } from "../../types";
-import { ALL_CATEGORIES } from "../../data/drugs";
+import { ALL_CATEGORIES } from "../../data/catalog";
 
 interface CategoryFilterProps {
   active: DrugCategory | "All";

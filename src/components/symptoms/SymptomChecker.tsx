@@ -4,7 +4,7 @@ import { useApp } from "../../context/AppContext";
 import { getTranslations } from "../../i18n";
 import { WarningBanner } from "../shared/WarningBanner";
 import { getMatchedRedFlagGroups } from "../../data/symptoms";
-import { getDrugById } from "../../data/drugs";
+import { getDrugById } from "../../data/catalog";
 import { translateDrugNameOnly, translateCategory } from "../../utils/medicalTranslation";
 import { fetchAiSymptomAdvice, type AiSymptomAdvice } from "../../services/aiSymptomAdvice";
 import type { SymptomSuggestion } from "../../types";
@@ -193,6 +193,7 @@ export function SymptomChecker() {
     language, symptomInput, setSymptomInput,
     selectedSymptoms, toggleSymptom, clearSelectedSymptoms,
     detectedRedFlags, symptomSuggestions, runSymptomCheck,
+    healthProfile,
   } = useApp();
   const t = getTranslations(language);
   const isZh = language === "zh";
@@ -222,6 +223,11 @@ export function SymptomChecker() {
         language,
         freeText: symptomInput,
         selectedSymptoms: translatedChips,
+        healthProfile: {
+          allergies: healthProfile.allergies,
+          conditions: healthProfile.conditions,
+          currentMeds: healthProfile.currentMeds,
+        },
       });
       setAiAdvice(advice);
     } catch (error) {
@@ -230,7 +236,7 @@ export function SymptomChecker() {
     } finally {
       setAiLoading(false);
     }
-  }, [hasInput, language, selectedSymptoms, symptomInput, t.symptoms.chips]);
+  }, [hasInput, healthProfile, language, selectedSymptoms, symptomInput, t.symptoms.chips]);
 
   function handleCheck() {
     setHasChecked(true);

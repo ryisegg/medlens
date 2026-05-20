@@ -1,8 +1,39 @@
 import type { Drug, DrugCategory } from "../types";
 import { drugs as baseDrugs } from "./drugs";
-import { expandedDrugs } from "./expandedDrugs";
 
-export const drugs: Drug[] = [...baseDrugs, ...expandedDrugs];
+let expandedDrugs: Drug[] = [];
+let expandedLoaded = false;
+let expandedPromise: Promise<void> | null = null;
+const listeners = new Set<() => void>();
+
+function notify() {
+  listeners.forEach((fn) => fn());
+}
+
+export function subscribeCatalog(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+export function isCatalogExpanded(): boolean {
+  return expandedLoaded;
+}
+
+export async function ensureExpandedLoaded(): Promise<void> {
+  if (expandedLoaded) return;
+  if (!expandedPromise) {
+    expandedPromise = import("./expandedDrugs").then((mod) => {
+      expandedDrugs = mod.expandedDrugs;
+      expandedLoaded = true;
+      notify();
+    });
+  }
+  await expandedPromise;
+}
+
+export function getDrugs(): Drug[] {
+  return [...baseDrugs, ...expandedDrugs];
+}
 
 function getSearchableText(drug: Drug) {
   const localized = drug as Drug & { chineseName?: string; chineseSummary?: string; aliases?: string[] };
@@ -24,16 +55,17 @@ function getSearchableText(drug: Drug) {
 }
 
 export function getDrugById(id: string): Drug | undefined {
-  return drugs.find((d) => d.id === id);
+  return getDrugs().find((d) => d.id === id);
 }
 
 export function searchDrugs(query: string): Drug[] {
   const q = query.toLowerCase().trim();
-  if (!q) return drugs;
-  return drugs.filter((drug) => getSearchableText(drug).includes(q));
+  if (!q) return getDrugs();
+  return getDrugs().filter((drug) => getSearchableText(drug).includes(q));
 }
 
 export function getDrugsByCategory(category: DrugCategory | "All"): Drug[] {
+  const drugs = getDrugs();
   if (category === "All") return drugs;
   return drugs.filter((d) => d.category === category);
 }
@@ -49,3 +81,6 @@ export const ALL_CATEGORIES: readonly (DrugCategory | "All")[] = [
   "Vitamins",
   "Chronic Conditions",
 ] as const;
+
+// Back-compat export for modules that imported `drugs` directly
+export const drugs: Drug[] = baseDrugs;

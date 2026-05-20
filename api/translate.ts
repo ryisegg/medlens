@@ -46,11 +46,7 @@ const translationSchema = {
   },
 } as const;
 
-function setCors(res: ApiResponse) {
-  res.setHeader("Access-Control-Allow-Origin", process.env.ALLOWED_ORIGIN ?? "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-}
+import { enforceRateLimit, setCors } from "./_lib/guard";
 
 function normalizeBody(body: unknown): TranslateRequest {
   if (typeof body === "string") {
@@ -97,6 +93,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
 
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  if (!enforceRateLimit(req, res)) {
+    return;
   }
 
   const apiKey = process.env.OPENAI_API_KEY;

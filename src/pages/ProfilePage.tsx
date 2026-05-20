@@ -4,7 +4,7 @@ import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { getTranslations } from "../i18n";
 import { lookupZhDrug } from "../data/zhDrugNames";
-import { getDrugById } from "../data/drugs";
+import { getDrugById } from "../data/catalog";
 
 type P = ReturnType<typeof getTranslations>["profile"];
 

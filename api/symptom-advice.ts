@@ -10,10 +10,17 @@ type ApiResponse = {
   end: () => void;
 };
 
+type HealthProfilePayload = {
+  allergies?: string[];
+  conditions?: string[];
+  currentMeds?: string[];
+};
+
 type SymptomAdviceRequest = {
   language?: "en" | "zh";
   freeText?: string;
   selectedSymptoms?: string[];
+  healthProfile?: HealthProfilePayload;
 };
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
@@ -64,11 +71,7 @@ const adviceSchema = {
   },
 } as const;
 
-function setCors(res: ApiResponse) {
-  res.setHeader("Access-Control-Allow-Origin", process.env.ALLOWED_ORIGIN ?? "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-}
+import { enforceRateLimit, setCors } from "./_lib/guard";
 
 function normalizeBody(body: unknown): SymptomAdviceRequest {
   if (typeof body === "string") {
@@ -117,6 +120,10 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  if (!enforceRateLimit(req, res)) {
+    return;
+  }
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return res.status(503).json({
@@ -135,10 +142,24 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     return res.status(400).json({ error: "Missing symptom description" });
   }
 
+  const profile = body.healthProfile ?? {};
+  const healthProfile = {
+    allergies: Array.isArray(profile.allergies)
+      ? profile.allergies.filter((item): item is string => typeof item === "string").slice(0, 20)
+      : [],
+    conditions: Array.isArray(profile.conditions)
+      ? profile.conditions.filter((item): item is string => typeof item === "string").slice(0, 20)
+      : [],
+    currentMeds: Array.isArray(profile.currentMeds)
+      ? profile.currentMeds.filter((item): item is string => typeof item === "string").slice(0, 20)
+      : [],
+  };
+
   const userPayload = {
     language,
     freeText,
     selectedSymptoms,
+    healthProfile,
   };
 
   try {
@@ -154,7 +175,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
           {
             role: "system",
             content:
-              "You are MedLens, a cautious medication education assistant. Provide educational triage guidance only. Do not diagnose, prescribe, calculate personalized dosing, or claim that a medicine is safe for a specific person. Prioritize emergency red flags and advise urgent care when appropriate. Suggest OTC medication classes only when reasonable, include who should avoid them, key risks, and when to ask a clinician or pharmacist. Respond in the requested language.",
+              "You are MedLens, a cautious medication education assistant. Provide educational triage guidance only. Do not diagnose, prescribe, calculate personalized dosing, or claim that a medicine is safe for a specific person. Prioritize emergency red flags and advise urgent care when appropriate. When healthProfile is provided, personalize avoidIf guidance for listed allergies, conditions, and current medications without claiming safety. Suggest OTC medication classes only when reasonable, include who should avoid them, key risks, and when to ask a clinician or pharmacist. Respond in the requested language.",
           },
           {
             role: "user",

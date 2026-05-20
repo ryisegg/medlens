@@ -1,12 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
-import type { CabinetItem, DoseLog, DoseStatus, MedicationSchedule } from "../../types";
+import { useMemo, useState } from "react";
+import type { DoseStatus, MedicationSchedule } from "../../types";
 import { useApp } from "../../context/AppContext";
+import { useMedicationStore } from "../../hooks/useMedicationStore";
 import { AddMedicationScheduleForm } from "./AddMedicationScheduleForm";
 import { DoseCard } from "./DoseCard";
-
-const SCHEDULE_KEY = "medlens_schedules";
-const DOSE_LOG_KEY = "medlens_dose_logs";
-const CABINET_KEY = "medlens_cabinet";
 
 type ViewMode = "day" | "week" | "month";
 
@@ -15,21 +12,8 @@ type GeneratedDose = {
   date: string;
   time: string;
   status: DoseStatus;
-  log?: DoseLog;
+  log?: import("../../types").DoseLog;
 };
-
-function loadJSON<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) as T : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function saveJSON(key: string, value: unknown) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
-}
 
 function iso(date: Date) {
   return date.toISOString().slice(0, 10);
@@ -66,7 +50,7 @@ function scheduleApplies(schedule: MedicationSchedule, dateIso: string) {
   return true;
 }
 
-function statusFor(date: string, time: string, log?: DoseLog): DoseStatus {
+function statusFor(date: string, time: string, log?: import("../../types").DoseLog): DoseStatus {
   if (log) return log.status;
   const now = new Date();
   const doseAt = new Date(`${date}T${time}:00`);
@@ -100,15 +84,17 @@ function frequencyLabel(frequency: string, language: string) {
 export function MedicationCalendar() {
   const { language } = useApp();
   const isZh = language === "zh";
-  const [schedules, setSchedules] = useState<MedicationSchedule[]>(() => loadJSON(SCHEDULE_KEY, []));
-  const [doseLogs, setDoseLogs] = useState<DoseLog[]>(() => loadJSON(DOSE_LOG_KEY, []));
-  const [cabinetItems] = useState<CabinetItem[]>(() => loadJSON(CABINET_KEY, []));
+  const {
+    schedules,
+    doseLogs,
+    cabinetItems,
+    addSchedule,
+    removeSchedule,
+    updateDoseLog,
+  } = useMedicationStore();
   const [viewMode, setViewMode] = useState<ViewMode>("day");
   const [selectedDate, setSelectedDate] = useState(todayIso());
   const [showForm, setShowForm] = useState(false);
-
-  useEffect(() => saveJSON(SCHEDULE_KEY, schedules), [schedules]);
-  useEffect(() => saveJSON(DOSE_LOG_KEY, doseLogs), [doseLogs]);
 
   const selectedDateObj = useMemo(() => new Date(`${selectedDate}T00:00:00`), [selectedDate]);
   const visibleDates = useMemo(() => getDates(viewMode, selectedDateObj), [viewMode, selectedDateObj]);
@@ -134,22 +120,6 @@ export function MedicationCalendar() {
   function moveDate(delta: number) {
     const step = viewMode === "month" ? 30 : viewMode === "week" ? 7 : 1;
     setSelectedDate(iso(addDays(selectedDateObj, delta * step)));
-  }
-
-  function updateDoseStatus(dose: GeneratedDose, status: DoseStatus) {
-    setDoseLogs((prev) => {
-      const existing = prev.find((log) => log.scheduleId === dose.schedule.id && log.date === dose.date && log.time === dose.time);
-      if (existing) {
-        return prev.map((log) => log.id === existing.id ? { ...log, status } : log);
-      }
-      return [...prev, {
-        id: crypto.randomUUID(),
-        scheduleId: dose.schedule.id,
-        date: dose.date,
-        time: dose.time,
-        status,
-      }];
-    });
   }
 
   return (
@@ -224,7 +194,7 @@ export function MedicationCalendar() {
           cabinetItems={cabinetItems}
           onCancel={() => setShowForm(false)}
           onAdd={(schedule) => {
-            setSchedules((prev) => [...prev, schedule]);
+            addSchedule(schedule);
             setShowForm(false);
           }}
         />
@@ -245,7 +215,7 @@ export function MedicationCalendar() {
               log={dose.log}
               status={dose.status}
               language={language}
-              onStatusChange={(status) => updateDoseStatus(dose, status)}
+              onStatusChange={(status) => updateDoseLog(dose.schedule.id, dose.date, dose.time, status)}
             />
           ))}
         </div>
@@ -262,7 +232,7 @@ export function MedicationCalendar() {
                     <p className="font-bold text-slate-950 dark:text-white">{schedule.medicationName}</p>
                     <p className="text-xs text-slate-500 dark:text-[#8e8e93]">{schedule.dosage} · {frequencyLabel(schedule.frequency, language)}</p>
                   </div>
-                  <button type="button" onClick={() => setSchedules((prev) => prev.filter((item) => item.id !== schedule.id))} className="text-xs font-semibold text-red-500">
+                  <button type="button" onClick={() => removeSchedule(schedule.id)} className="text-xs font-semibold text-red-500">
                     {isZh ? "删除" : "Delete"}
                   </button>
                 </div>

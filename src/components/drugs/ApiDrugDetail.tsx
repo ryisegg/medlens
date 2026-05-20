@@ -4,6 +4,7 @@ import type { ApiDrugDetail } from "../../types/api";
 import { useApp } from "../../context/AppContext";
 import { getTranslations } from "../../i18n";
 import { analyzeDrugRisks } from "../../services/drugIntelligence";
+import { buildDrugLabelText, checkHealthProfileAgainstDrugText } from "../../utils/healthProfileCheck";
 import { lookupZhDrug } from "../../data/zhDrugNames";
 import { translateSections } from "../../services/translation";
 
@@ -130,6 +131,11 @@ export function ApiDrugDetailView({ drug }: Props) {
     healthProfile.conditions.length > 0 ||
     healthProfile.currentMeds.length > 0;
 
+  const healthMatches = useMemo(() => {
+    if (!hasHealthProfile) return [];
+    return checkHealthProfileAgainstDrugText(healthProfile, buildDrugLabelText(drug));
+  }, [drug, hasHealthProfile, healthProfile]);
+
   const trackedRef = useRef(false);
   useEffect(() => {
     if (trackedRef.current) return;
@@ -192,6 +198,25 @@ export function ApiDrugDetailView({ drug }: Props) {
           <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
             ⚠ {t.profile.healthCaution}
           </p>
+          {healthMatches.length > 0 && (
+            <ul className="mt-2 space-y-1.5 text-xs text-amber-900 dark:text-amber-200">
+              {healthMatches.map((match) => (
+                <li key={`${match.kind}-${match.term}`}>
+                  <span className="font-bold">
+                    {match.kind === "allergy"
+                      ? (isZh ? "过敏：" : "Allergy: ")
+                      : match.kind === "condition"
+                        ? (isZh ? "病史：" : "Condition: ")
+                        : (isZh ? "当前用药：" : "Current med: ")}
+                    {match.term}
+                  </span>
+                  {match.context && (
+                    <span className="block mt-0.5 text-amber-800/90 dark:text-amber-300/90">{match.context}</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
       <Card>

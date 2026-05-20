@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -21,10 +22,11 @@ import type {
   SavedApiDrug,
   SymptomSuggestion,
 } from "../types";
-import { getDrugById, getDrugsByCategory } from "../data/drugs";
+import { ensureExpandedLoaded, getDrugById, getDrugsByCategory, subscribeCatalog } from "../data/catalog";
 import { detectRedFlags, getSymptomSuggestions, CHIP_SYMPTOM_KEYWORDS } from "../data/symptoms";
 import { translateDrugNameOnly } from "../utils/medicalTranslation";
 import { runPillIdentifier } from "../data/identifier";
+import { loadJSON, loadStr, saveJSON, removeKey } from "../lib/storage";
 
 const AppContext = createContext<AppContextValue | null>(null);
 
@@ -32,23 +34,11 @@ const EMPTY_PILL_QUERY: PillIdentifierQuery = {
   color: "", shape: "", imprint: "", strength: "", scored: "",
 };
 
-// ── localStorage helpers ────────────────────────────────────────────────────
-function loadStr(key: string, fallback: string): string {
-  try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; }
-}
-function loadJSON<T>(key: string, fallback: T): T {
-  try {
-    const s = localStorage.getItem(key);
-    return s ? (JSON.parse(s) as T) : fallback;
-  } catch { return fallback; }
-}
-function saveJSON(key: string, value: unknown) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
-}
-
 function loadLanguage(): Language {
-  const v = loadStr("medlens_lang", "en");
-  return (v === "en" || v === "zh") ? v : "en";
+  const region = loadStr("medlens_region", "US");
+  const saved = loadStr("medlens_lang", "");
+  if (saved === "en" || saved === "zh") return saved;
+  return region === "CN" ? "zh" : "en";
 }
 function loadDark(): boolean {
   return loadStr("medlens_theme", "light") === "dark";
@@ -85,6 +75,7 @@ function loadRegion(): "US" | "CN" {
 }
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const [catalogVersion, setCatalogVersion] = useState(0);
   const [language, setLanguageRaw] = useState<Language>(loadLanguage);
   const [isDark, setIsDark] = useState<boolean>(loadDark);
   const [hasOnboarded, setHasOnboarded] = useState<boolean>(loadOnboarded);
@@ -104,6 +95,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(loadRecentSearches);
   const [healthProfile, setHealthProfile] = useState<HealthProfile>(loadHealthProfile);
   const [region, setRegionRaw] = useState<"US" | "CN">(loadRegion);
+
+  useEffect(() => {
+    void ensureExpandedLoaded();
+    return subscribeCatalog(() => setCatalogVersion((v) => v + 1));
+  }, []);
 
   // ── Language ──────────────────────────────────────────────────────────────
   const setLanguage = useCallback((lang: Language) => {
@@ -128,6 +124,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // ── Drug search ───────────────────────────────────────────────────────────
   const filteredDrugs = useMemo(() => {
+    void catalogVersion;
     let result = getDrugsByCategory(activeCategory);
     if (otcRxFilter !== "all") {
       result = result.filter((d) => d.otcOrRx === otcRxFilter);
@@ -146,7 +143,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         (zhName !== d.name && zhName.includes(q))
       );
     });
-  }, [searchQuery, activeCategory, otcRxFilter]);
+  }, [searchQuery, activeCategory, otcRxFilter, catalogVersion]);
 
   const setSearchQuery = useCallback((q: string) => setSearchQueryRaw(q), []);
 
@@ -255,7 +252,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const clearApiHistory = useCallback(() => {
     setApiHistory([]);
-    try { localStorage.removeItem("medlens_api_history"); } catch { /* ignore */ }
+    removeKey("medlens_api_history");
   }, []);
 
   // ── Recent searches ───────────────────────────────────────────────────────
@@ -272,7 +269,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const clearRecentSearches = useCallback(() => {
     setRecentSearches([]);
-    try { localStorage.removeItem("medlens_recent_searches"); } catch { /* ignore */ }
+    removeKey("medlens_recent_searches");
   }, []);
 
   // ── Health profile ────────────────────────────────────────────────────────
@@ -288,6 +285,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const setRegion = useCallback((r: "US" | "CN") => {
     setRegionRaw(r);
     try { localStorage.setItem("medlens_region", r); } catch { /* ignore */ }
+    setLanguageRaw((prev) => {
+      const hasExplicitLang = loadStr("medlens_lang", "") !== "";
+      if (hasExplicitLang) return prev;
+      return r === "CN" ? "zh" : "en";
+    });
   }, []);
 
   const value = useMemo<AppContextValue>(

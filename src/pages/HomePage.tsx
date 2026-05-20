@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useApp } from "../context/AppContext";
 import { getTranslations } from "../i18n";
 import { DrugCard } from "../components/shared/DrugCard";
-import { getDrugById } from "../data/drugs";
+import { getDrugById } from "../data/catalog";
 import { DRUG_CATEGORY_ZH } from "../utils/medicalTranslation";
 import type { DrugCategory } from "../types";
 

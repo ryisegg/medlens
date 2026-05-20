@@ -1,5 +1,5 @@
 import type { PillIdentifierQuery, PillIdentifierResult } from "../types";
-import { drugs } from "./catalog";
+import { getDrugs } from "./catalog";
 
 export function runPillIdentifier(query: PillIdentifierQuery): PillIdentifierResult[] {
   const { color, shape, imprint } = query;
@@ -8,7 +8,7 @@ export function runPillIdentifier(query: PillIdentifierQuery): PillIdentifierRes
 
   const results: PillIdentifierResult[] = [];
 
-  for (const drug of drugs) {
+  for (const drug of getDrugs()) {
     const matchedOn: string[] = [];
 
     if (imprint.trim()) {

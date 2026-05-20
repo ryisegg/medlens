@@ -1,4 +1,4 @@
-import type { Drug, DrugCategory } from "../types";
+import type { Drug } from "../types";
 
 export const drugs: Drug[] = [
   {
@@ -1210,39 +1210,3 @@ export const drugs: Drug[] = [
     imprintExamples: ["SYNTHROID 50", "SYNTHROID 100", "L50"],
   },
 ];
-
-export function getDrugById(id: string): Drug | undefined {
-  return drugs.find((d) => d.id === id);
-}
-
-export function searchDrugs(query: string): Drug[] {
-  const q = query.toLowerCase().trim();
-  if (!q) return drugs;
-  return drugs.filter(
-    (d) =>
-      d.name.toLowerCase().includes(q) ||
-      d.genericName.toLowerCase().includes(q) ||
-      d.brandNames.some((b) => b.toLowerCase().includes(q)) ||
-      d.activeIngredient.toLowerCase().includes(q) ||
-      d.description.toLowerCase().includes(q) ||
-      d.pillColors.some((c) => c.includes(q)) ||
-      d.imprintExamples.some((imp) => imp.toLowerCase().includes(q)),
-  );
-}
-
-export function getDrugsByCategory(category: DrugCategory | "All"): Drug[] {
-  if (category === "All") return drugs;
-  return drugs.filter((d) => d.category === category);
-}
-
-export const ALL_CATEGORIES: readonly (DrugCategory | "All")[] = [
-  "All",
-  "Pain Relief",
-  "Allergy",
-  "Cold & Flu",
-  "Digestive Health",
-  "Skin",
-  "Sleep",
-  "Vitamins",
-  "Chronic Conditions",
-] as const;

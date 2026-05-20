@@ -1,4 +1,6 @@
 import { useEffect, useCallback } from "react";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { ensureExpandedLoaded } from "../data/catalog";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useApp } from "../context/AppContext";
@@ -62,7 +64,12 @@ export function DrugSearchPage() {
   } = useApp();
   const t = getTranslations(language);
   const liveQuery = searchQuery.trim();
+  const debouncedAiQuery = useDebouncedValue(liveQuery, 600);
   const q = liveQuery.toLowerCase();
+
+  useEffect(() => {
+    void ensureExpandedLoaded();
+  }, []);
 
   const localDrugs = getDrugsByCategory(activeCategory)
     .filter((drug) => otcRxFilter === "all" || drug.otcOrRx === otcRxFilter)
@@ -75,10 +82,10 @@ export function DrugSearchPage() {
     staleTime: 6 * 60 * 60 * 1000,
   });
 
-  const showAiSearch = liveQuery.length >= 3;
+  const showAiSearch = debouncedAiQuery.length >= 3;
   const { data: aiData, isPending: aiLoading, isError: aiError } = useQuery({
-    queryKey: ["ai-drug-search", liveQuery, language],
-    queryFn: () => fetchAiDrugSearch({ query: liveQuery, language }),
+    queryKey: ["ai-drug-search", debouncedAiQuery, language],
+    queryFn: () => fetchAiDrugSearch({ query: debouncedAiQuery, language }),
     enabled: showAiSearch,
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,

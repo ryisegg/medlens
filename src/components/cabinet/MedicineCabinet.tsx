@@ -1,26 +1,11 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import type { CabinetItem, MedicationSchedule } from "../../types";
 import { useApp } from "../../context/AppContext";
+import { useMedicationStore } from "../../hooks/useMedicationStore";
 import { CabinetItemCard } from "./CabinetItemCard";
 import { getExpirationState } from "./ExpirationWarningBadge";
 
-const CABINET_KEY = "medlens_cabinet";
-const SCHEDULE_KEY = "medlens_schedules";
-
 type Filter = "all" | "low" | "expired" | "soon";
-
-function loadJSON<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) as T : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function saveJSON(key: string, value: unknown) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* ignore */ }
-}
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -42,19 +27,15 @@ const EMPTY_ITEM: CabinetItem = {
 export function MedicineCabinet() {
   const { language } = useApp();
   const isZh = language === "zh";
-  const [items, setItems] = useState<CabinetItem[]>(() => loadJSON(CABINET_KEY, []));
-  const [schedules, setSchedules] = useState<MedicationSchedule[]>(() => loadJSON(SCHEDULE_KEY, []));
+  const { cabinetItems, schedules, upsertCabinetItem, removeCabinetItem, addSchedule } = useMedicationStore();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [editing, setEditing] = useState<CabinetItem | null>(null);
   const [showForm, setShowForm] = useState(false);
 
-  useEffect(() => saveJSON(CABINET_KEY, items), [items]);
-  useEffect(() => saveJSON(SCHEDULE_KEY, schedules), [schedules]);
-
   const filteredItems = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return items.filter((item) => {
+    return cabinetItems.filter((item) => {
       const matchesQuery = !q || [item.medicationName, item.genericName, item.strength, item.storageLocation]
         .filter(Boolean)
         .some((value) => value?.toLowerCase().includes(q));
@@ -66,7 +47,7 @@ export function MedicineCabinet() {
         (filter === "soon" && expiration === "soon");
       return matchesQuery && matchesFilter;
     });
-  }, [filter, items, query]);
+  }, [filter, cabinetItems, query]);
 
   function resetForm() {
     setEditing(null);
@@ -85,11 +66,7 @@ export function MedicineCabinet() {
       notes: item.notes?.trim() || undefined,
     };
     if (!normalized.medicationName) return;
-
-    setItems((prev) => {
-      if (normalized.id) return prev.map((existing) => existing.id === normalized.id ? normalized : existing);
-      return [{ ...normalized, id: crypto.randomUUID() }, ...prev];
-    });
+    upsertCabinetItem(normalized);
     resetForm();
   }
 
@@ -104,7 +81,7 @@ export function MedicineCabinet() {
       notes: item.storageLocation ? `${isZh ? "位置" : "Location"}: ${item.storageLocation}` : undefined,
       linkedCabinetItemId: item.id,
     };
-    setSchedules((prev) => [schedule, ...prev]);
+    addSchedule(schedule);
   }
 
   return (
@@ -152,7 +129,7 @@ export function MedicineCabinet() {
 
       {filteredItems.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-5 py-8 text-center text-sm text-slate-500 dark:border-[#3a3a3c] dark:bg-[#1c1c1e] dark:text-[#8e8e93]">
-          {items.length === 0 ? (isZh ? "药箱还是空的，先添加一盒药。" : "Your cabinet is empty. Add your first medicine.") : (isZh ? "没有匹配的药品。" : "No matching medicines.")}
+          {cabinetItems.length === 0 ? (isZh ? "药箱还是空的，先添加一盒药。" : "Your cabinet is empty. Add your first medicine.") : (isZh ? "没有匹配的药品。" : "No matching medicines.")}
         </div>
       ) : (
         <div className="space-y-3">
@@ -163,7 +140,7 @@ export function MedicineCabinet() {
               language={language}
               schedules={schedules}
               onEdit={(target) => { setEditing(target); setShowForm(true); }}
-              onDelete={(id) => setItems((prev) => prev.filter((existing) => existing.id !== id))}
+              onDelete={removeCabinetItem}
               onCreateSchedule={createSchedule}
             />
           ))}
