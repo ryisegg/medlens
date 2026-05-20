@@ -53,7 +53,7 @@ function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f2f2f7] dark:bg-black">
+    <div className="min-h-screen bg-[#f5f5f7] dark:bg-[#0a0a0a]">
       <ScrollToTop />
       <TopBar />
       <main className="pt-12 pb-20">

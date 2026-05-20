@@ -1,109 +1,73 @@
 import { NavLink } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { Pill, Activity, Calendar, Archive, User } from "lucide-react";
 import { useApp } from "../../context/AppContext";
-import { getTranslations } from "../../i18n";
-
-function SearchIcon({ active }: { active: boolean }) {
-  return active ? (
-    <svg className="h-[25px] w-[25px]" viewBox="0 0 24 24" fill="currentColor">
-      <path fillRule="evenodd" clipRule="evenodd" d="M10.5 3.75a6.75 6.75 0 100 13.5 6.75 6.75 0 000-13.5zM2.25 10.5a8.25 8.25 0 1114.59 5.28l4.69 4.69a.75.75 0 11-1.06 1.06l-4.69-4.69A8.25 8.25 0 012.25 10.5z" />
-    </svg>
-  ) : (
-    <svg className="h-[25px] w-[25px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-    </svg>
-  );
-}
-
-function SymptomsIcon({ active }: { active: boolean }) {
-  return active ? (
-    <svg className="h-[25px] w-[25px]" viewBox="0 0 24 24" fill="currentColor">
-      <path fillRule="evenodd" clipRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" />
-    </svg>
-  ) : (
-    <svg className="h-[25px] w-[25px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
-    </svg>
-  );
-}
-
-function CalendarIcon({ active }: { active: boolean }) {
-  return active ? (
-    <svg className="h-[25px] w-[25px]" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M6.75 2.25A.75.75 0 017.5 3v1.5h9V3a.75.75 0 011.5 0v1.5h.75A2.25 2.25 0 0121 6.75v11.5a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18.25V6.75A2.25 2.25 0 015.25 4.5H6V3a.75.75 0 01.75-.75zM4.5 9v9.25c0 .414.336.75.75.75h13.5a.75.75 0 00.75-.75V9h-15z" />
-    </svg>
-  ) : (
-    <svg className="h-[25px] w-[25px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3.75 9h16.5M5.25 4.5h13.5A1.5 1.5 0 0120.25 6v12.75a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V6a1.5 1.5 0 011.5-1.5z" />
-    </svg>
-  );
-}
-
-function CabinetIcon({ active }: { active: boolean }) {
-  return active ? (
-    <svg className="h-[25px] w-[25px]" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M4.5 4.5A2.25 2.25 0 016.75 2.25h10.5A2.25 2.25 0 0119.5 4.5v15.75a.75.75 0 01-1.5 0V19.5H6v.75a.75.75 0 01-1.5 0V4.5zM6 4.5V18h5.25V4.5H6zm6.75 0V18H18V4.5h-5.25zM9 10.5a.75.75 0 000 1.5h.75a.75.75 0 000-1.5H9zm5.25 0a.75.75 0 000 1.5H15a.75.75 0 000-1.5h-.75z" />
-    </svg>
-  ) : (
-    <svg className="h-[25px] w-[25px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 5.25A2.25 2.25 0 016.75 3h10.5a2.25 2.25 0 012.25 2.25V21M6 21V5.25A.75.75 0 016.75 4.5h10.5a.75.75 0 01.75.75V21M6 12h12M10.5 8.25h-1.5M15 8.25h-1.5M10.5 15.75h-1.5M15 15.75h-1.5" />
-    </svg>
-  );
-}
-
-function ProfileIcon({ active }: { active: boolean }) {
-  return active ? (
-    <svg className="h-[25px] w-[25px]" viewBox="0 0 24 24" fill="currentColor">
-      <path fillRule="evenodd" clipRule="evenodd" d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z" />
-    </svg>
-  ) : (
-    <svg className="h-[25px] w-[25px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-    </svg>
-  );
-}
 
 const TABS = [
-  { to: "/drugs", key: "search", Icon: SearchIcon },
-  { to: "/symptoms", key: "symptoms", Icon: SymptomsIcon },
-  { to: "/calendar", key: "calendar", Icon: CalendarIcon },
-  { to: "/cabinet", key: "cabinet", Icon: CabinetIcon },
-  { to: "/profile", key: "profile", Icon: ProfileIcon },
+  { to: "/drugs",    key: "search",    Icon: Pill,     labelEn: "Medicines",  labelZh: "查药"  },
+  { to: "/symptoms", key: "symptoms",  Icon: Activity,  labelEn: "Symptoms",   labelZh: "症状"  },
+  { to: "/calendar", key: "calendar",  Icon: Calendar,  labelEn: "Calendar",   labelZh: "日历"  },
+  { to: "/cabinet",  key: "cabinet",   Icon: Archive,   labelEn: "Cabinet",    labelZh: "药箱"  },
+  { to: "/profile",  key: "profile",   Icon: User,      labelEn: "Profile",    labelZh: "我的"  },
 ] as const;
-
-const LABELS = {
-  en: { search: "Search", symptoms: "Symptoms", calendar: "Calendar", cabinet: "Cabinet", profile: "Profile" },
-  zh: { search: "查药", symptoms: "症状", calendar: "日历", cabinet: "药箱", profile: "我的" },
-} as const;
 
 export function TabBar() {
   const { language } = useApp();
-  const t = getTranslations(language);
-  const labels = language === "zh" ? LABELS.zh : LABELS.en;
+  const isZh = language === "zh";
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200/80 bg-white/95 backdrop-blur-xl dark:border-[#3a3a3c] dark:bg-[#1c1c1e]/95"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-[#111]/95 backdrop-blur-2xl"
+      style={{
+        paddingBottom: "env(safe-area-inset-bottom)",
+        borderTop: "1px solid rgba(0,0,0,0.06)",
+        boxShadow: "0 -1px 0 rgba(0,0,0,0.04), 0 -8px 24px rgba(0,0,0,0.05)",
+      }}
     >
-      <div className="flex h-14">
-        {TABS.map(({ to, key, Icon }) => (
+      <div className="flex h-14 items-center">
+        {TABS.map(({ to, Icon, labelEn, labelZh }) => (
           <NavLink
             key={to}
             to={to}
-            className={({ isActive }) =>
-              `flex flex-1 flex-col items-center justify-center gap-0.5 transition-colors ${
-                isActive
-                  ? "text-blue-600 dark:text-[#0a84ff]"
-                  : "text-slate-400 dark:text-[#636366]"
-              }`
-            }
-            aria-label={labels[key] ?? t.tabs.search}
+            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1"
+            aria-label={isZh ? labelZh : labelEn}
           >
             {({ isActive }) => (
-              <>
-                <Icon active={isActive} />
-                <span className="text-[10px] font-medium leading-none">{labels[key]}</span>
-              </>
+              <div className="flex flex-col items-center gap-0.5">
+                <div className="relative flex h-7 w-7 items-center justify-center">
+                  <AnimatePresence>
+                    {isActive && (
+                      <motion.div
+                        key="pill"
+                        layoutId="tab-pill"
+                        className="absolute inset-0 rounded-full bg-blue-50 dark:bg-blue-950/50"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                  </AnimatePresence>
+                  <Icon
+                    size={19}
+                    strokeWidth={isActive ? 2.2 : 1.7}
+                    className={`relative z-10 transition-colors duration-200 ${
+                      isActive
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-slate-400 dark:text-slate-500"
+                    }`}
+                  />
+                </div>
+                <span
+                  className={`text-[10px] font-medium leading-none transition-colors duration-200 ${
+                    isActive
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-slate-400 dark:text-slate-500"
+                  }`}
+                >
+                  {isZh ? labelZh : labelEn}
+                </span>
+              </div>
             )}
           </NavLink>
         ))}

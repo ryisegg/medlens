@@ -1,18 +1,17 @@
 export function DrugCardSkeleton() {
   return (
-    <div className="rounded-2xl bg-white px-5 py-4 shadow-sm dark:bg-[#1c1c1e] animate-pulse">
-      <div className="flex items-start gap-3">
-        <div className="flex-1 space-y-2">
-          <div className="h-4 w-3/4 rounded-full bg-slate-200 dark:bg-[#2c2c2e]" />
-          <div className="h-3 w-1/2 rounded-full bg-slate-100 dark:bg-[#2c2c2e]" />
-          <div className="h-3 w-full rounded-full bg-slate-100 dark:bg-[#2c2c2e]" />
-          <div className="h-3 w-4/5 rounded-full bg-slate-100 dark:bg-[#2c2c2e]" />
+    <div className="rounded-2xl bg-white shadow-soft dark:bg-[#1c1c1e]">
+      <div className="flex items-start gap-3.5 p-4">
+        <div className="h-11 w-11 flex-shrink-0 rounded-xl shimmer" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="h-4 w-3/4 rounded-full shimmer" />
+          <div className="h-3 w-1/2 rounded-full shimmer" />
+          <div className="h-3 w-full rounded-full shimmer" />
+          <div className="mt-1 flex gap-2">
+            <div className="h-5 w-14 rounded-full shimmer" />
+            <div className="h-5 w-10 rounded-full shimmer" />
+          </div>
         </div>
-        <div className="h-8 w-8 flex-shrink-0 rounded-full bg-slate-100 dark:bg-[#2c2c2e]" />
-      </div>
-      <div className="mt-3 flex gap-2">
-        <div className="h-5 w-12 rounded-full bg-slate-100 dark:bg-[#2c2c2e]" />
-        <div className="h-5 w-20 rounded-full bg-slate-100 dark:bg-[#2c2c2e]" />
       </div>
     </div>
   );

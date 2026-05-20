@@ -1,7 +1,7 @@
 import { useEffect, useCallback, useState } from "react";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { ensureExpandedLoaded } from "../data/catalog";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useApp } from "../context/AppContext";
 import { getTranslations } from "../i18n";
@@ -59,6 +59,7 @@ function matchesQuery(drug: Drug, query: string) {
 
 export function DrugSearchPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     language, searchQuery, setSearchQuery,
     activeCategory, setActiveCategory,
@@ -66,8 +67,15 @@ export function DrugSearchPage() {
     addToRecentSearches, toggleSavedApiDrug, isApiDrugSaved,
   } = useApp();
   const t = getTranslations(language);
-  const [searchMode, setSearchMode] = useState<'western' | 'tcm'>('western');
-  const [tcmCategory, setTcmCategory] = useState<TCMCategory | 'All'>('All');
+
+  const navState = location.state as { mode?: string; category?: string; query?: string } | null;
+  const [searchMode, setSearchMode] = useState<'western' | 'tcm'>(
+    navState?.mode === 'tcm' ? 'tcm' : 'western'
+  );
+  const [tcmCategory, setTcmCategory] = useState<TCMCategory | 'All'>(
+    (navState?.category as TCMCategory | undefined) ?? 'All'
+  );
+
   const liveQuery = searchQuery.trim();
   const debouncedAiQuery = useDebouncedValue(liveQuery, 600);
   const q = liveQuery.toLowerCase();
@@ -75,6 +83,12 @@ export function DrugSearchPage() {
   useEffect(() => {
     void ensureExpandedLoaded();
   }, []);
+
+  useEffect(() => {
+    if (navState?.query) {
+      setSearchQuery(navState.query);
+    }
+  }, [navState?.query, setSearchQuery]);
 
   const localDrugs = getDrugsByCategory(activeCategory)
     .filter((drug) => otcRxFilter === "all" || drug.otcOrRx === otcRxFilter)
@@ -136,31 +150,32 @@ export function DrugSearchPage() {
 
   return (
     <div className="space-y-0">
-      <div className="sticky top-12 z-30 bg-white px-4 pt-3 pb-3 shadow-sm dark:bg-[#1c1c1e] dark:shadow-none border-b border-slate-100 dark:border-[#2c2c2e]">
-        {/* 西药 / 中药 mode toggle */}
-        <div className="mb-3 flex rounded-xl bg-slate-100 p-1 dark:bg-[#2c2c2e]">
-          <button
-            type="button"
-            onClick={() => setSearchMode('western')}
-            className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${
-              searchMode === 'western'
-                ? 'bg-white text-slate-900 shadow-sm dark:bg-black dark:text-white'
-                : 'text-slate-500 dark:text-[#8e8e93]'
-            }`}
-          >
-            {isZh ? '💊 西药' : '💊 Western'}
-          </button>
-          <button
-            type="button"
-            onClick={() => setSearchMode('tcm')}
-            className={`flex-1 rounded-lg py-2 text-xs font-semibold transition ${
-              searchMode === 'tcm'
-                ? 'bg-white text-slate-900 shadow-sm dark:bg-black dark:text-white'
-                : 'text-slate-500 dark:text-[#8e8e93]'
-            }`}
-          >
-            {isZh ? '🌿 中药' : '🌿 TCM Herbs'}
-          </button>
+      {/* ── Premium sticky header ── */}
+      <div
+        className="sticky top-12 z-30 bg-white/95 px-4 pt-3 pb-3 dark:bg-[#111]/95 backdrop-blur-xl"
+        style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 4px 16px rgba(0,0,0,0.04)" }}
+      >
+        {/* Mode toggle */}
+        <div className="mb-3 flex gap-1 rounded-2xl bg-slate-100/80 p-1 dark:bg-white/6">
+          {([
+            { mode: "western" as const, label: isZh ? "💊 西药" : "💊 Western" },
+            { mode: "tcm"     as const, label: isZh ? "🌿 中药" : "🌿 TCM" },
+          ] as const).map(({ mode, label }) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setSearchMode(mode)}
+              className={`flex-1 rounded-xl py-2 text-[13px] font-semibold transition-all duration-200 ${
+                searchMode === mode
+                  ? mode === "tcm"
+                    ? "bg-white text-emerald-700 shadow-sm dark:bg-[#1c1c1e] dark:text-emerald-400"
+                    : "bg-white text-blue-700 shadow-sm dark:bg-[#1c1c1e] dark:text-blue-400"
+                  : "text-slate-500 dark:text-slate-500"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         <AutocompleteSearch
@@ -173,15 +188,15 @@ export function DrugSearchPage() {
         />
 
         {searchMode === 'tcm' ? (
-          <div className="mt-3 -mx-4 overflow-x-auto px-4 pb-0.5">
-            <div className="flex gap-2 w-max">
+          <div className="mt-2.5 -mx-4 overflow-x-auto px-4 pb-0.5">
+            <div className="flex gap-1.5 w-max">
               <button
                 type="button"
                 onClick={() => setTcmCategory('All')}
-                className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition ${
+                className={`flex-shrink-0 rounded-full px-3 py-1.5 text-[11px] font-semibold transition-all ${
                   tcmCategory === 'All'
-                    ? 'bg-emerald-600 text-white shadow-sm dark:bg-emerald-500'
-                    : 'bg-slate-100 text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]'
+                    ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 dark:bg-emerald-500'
+                    : 'bg-slate-100 text-slate-500 dark:bg-white/8 dark:text-slate-400'
                 }`}
               >
                 {isZh ? '全部' : 'All'}
@@ -191,10 +206,10 @@ export function DrugSearchPage() {
                   key={cat}
                   type="button"
                   onClick={() => setTcmCategory(tcmCategory === cat ? 'All' : cat)}
-                  className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition ${
+                  className={`flex-shrink-0 rounded-full px-3 py-1.5 text-[11px] font-semibold whitespace-nowrap transition-all ${
                     tcmCategory === cat
-                      ? 'bg-emerald-600 text-white shadow-sm dark:bg-emerald-500'
-                      : 'bg-slate-100 text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]'
+                      ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30 dark:bg-emerald-500'
+                      : 'bg-slate-100 text-slate-500 dark:bg-white/8 dark:text-slate-400'
                   }`}
                 >
                   {isZh ? cat : TCM_CATEGORY_EN[cat]}
@@ -203,44 +218,43 @@ export function DrugSearchPage() {
             </div>
           </div>
         ) : (
-        <>
-        <div className="mt-3 flex gap-2">
-          {otcOptions.map(({ value, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setOtcRxFilter(value)}
-              className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
-                otcRxFilter === value
-                  ? "bg-blue-600 text-white dark:bg-[#0a84ff]"
-                  : "bg-slate-100 text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-
-        <div className="mt-3 -mx-4 overflow-x-auto px-4 pb-0.5">
-          <div className="flex gap-2 w-max">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setActiveCategory(activeCategory === cat ? "All" : cat)}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition ${
-                  activeCategory === cat
-                    ? "bg-blue-600 text-white shadow-sm dark:bg-[#0a84ff]"
-                    : "bg-slate-100 text-slate-600 dark:bg-[#2c2c2e] dark:text-[#8e8e93]"
-                }`}
-              >
-                <span>{CATEGORY_EMOJIS[cat]}</span>
-                <span>{language === "zh" ? DRUG_CATEGORY_ZH[cat] : cat}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        </>
+          <>
+            <div className="mt-2.5 flex gap-1.5">
+              {otcOptions.map(({ value, label }) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setOtcRxFilter(value)}
+                  className={`rounded-full px-3.5 py-1.5 text-[11px] font-semibold transition-all ${
+                    otcRxFilter === value
+                      ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30 dark:bg-[#0a84ff]"
+                      : "bg-slate-100 text-slate-500 dark:bg-white/8 dark:text-slate-400"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div className="mt-2 -mx-4 overflow-x-auto px-4 pb-0.5">
+              <div className="flex gap-1.5 w-max">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setActiveCategory(activeCategory === cat ? "All" : cat)}
+                    className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-[11px] font-medium whitespace-nowrap transition-all ${
+                      activeCategory === cat
+                        ? "bg-blue-600 text-white shadow-sm shadow-blue-600/30 dark:bg-[#0a84ff]"
+                        : "bg-slate-100 text-slate-500 dark:bg-white/8 dark:text-slate-400"
+                    }`}
+                  >
+                    <span>{CATEGORY_EMOJIS[cat]}</span>
+                    <span>{language === "zh" ? DRUG_CATEGORY_ZH[cat] : cat}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
         )}
       </div>
 

@@ -15,7 +15,7 @@ type P = Translations["profile"];
 
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl bg-white px-5 py-4 shadow-sm dark:bg-[#1c1c1e] ${className}`}>
+    <div className={`rounded-2xl bg-white shadow-soft px-5 py-4 dark:bg-[#1c1c1e] ${className}`}>
       {children}
     </div>
   );
@@ -24,7 +24,7 @@ function Card({ children, className = "" }: { children: React.ReactNode; classNa
 function SectionTitle({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="mb-3 flex items-center justify-between">
-      <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-[#636366]">
+      <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
         {children}
       </p>
       {action}
