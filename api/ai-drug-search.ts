@@ -1,5 +1,3 @@
-import { enforceRateLimit, setCors } from "../lib/apiGuard";
-
 type ApiRequest = {
   method?: string;
   body?: unknown;
@@ -53,6 +51,32 @@ const drugSearchSchema = {
     },
   },
 } as const;
+
+const rateBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function setCors(res: ApiResponse) {
+  const origin = process.env.ALLOWED_ORIGIN?.trim();
+  res.setHeader("Access-Control-Allow-Origin", origin || "https://ryisegg.github.io");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+}
+
+function enforceRateLimit(req: ApiRequest, res: ApiResponse): boolean {
+  const forwarded = req.headers?.["x-forwarded-for"];
+  const ip = (Array.isArray(forwarded) ? forwarded[0] : forwarded)?.split(",")[0]?.trim() || "unknown";
+  const now = Date.now();
+  let bucket = rateBuckets.get(ip);
+  if (!bucket || now > bucket.resetAt) {
+    bucket = { count: 0, resetAt: now + 60_000 };
+    rateBuckets.set(ip, bucket);
+  }
+  bucket.count += 1;
+  if (bucket.count > 30) {
+    res.status(429).json({ error: "Too many requests" });
+    return false;
+  }
+  return true;
+}
 
 function normalizeBody(body: unknown): AiDrugSearchRequest {
   if (typeof body === "string") {
