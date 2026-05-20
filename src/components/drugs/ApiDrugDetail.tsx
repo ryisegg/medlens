@@ -121,9 +121,14 @@ const SOURCE_LABEL: Record<ApiDrugDetail["source"], string> = {
 
 export function ApiDrugDetailView({ drug }: Props) {
   const navigate = useNavigate();
-  const { language, toggleSavedApiDrug, isApiDrugSaved, addToApiHistory } = useApp();
+  const { language, toggleSavedApiDrug, isApiDrugSaved, addToApiHistory, healthProfile } = useApp();
   const t = getTranslations(language);
   const saved = isApiDrugSaved(drug.name);
+
+  const hasHealthProfile =
+    healthProfile.allergies.length > 0 ||
+    healthProfile.conditions.length > 0 ||
+    healthProfile.currentMeds.length > 0;
 
   const trackedRef = useRef(false);
   useEffect(() => {
@@ -182,6 +187,13 @@ export function ApiDrugDetailView({ drug }: Props) {
 
   return (
     <div className="space-y-3 px-4 py-4">
+      {hasHealthProfile && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-950/40">
+          <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+            ⚠ {t.profile.healthCaution}
+          </p>
+        </div>
+      )}
       <Card>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex flex-wrap gap-1.5">

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { useApp } from "../context/AppContext";
@@ -11,7 +11,7 @@ import { ALL_CATEGORIES, getDrugsByCategory } from "../data/catalog";
 import { searchRxNorm } from "../services/rxnormApi";
 import { fetchAiDrugSearch } from "../services/aiDrugSearch";
 import type { AiDrugSuggestion } from "../services/aiDrugSearch";
-import { DRUG_CATEGORY_ZH, translateDrugNameOnly } from "../utils/medicalTranslation";
+import { DRUG_CATEGORY_ZH, translateDrugNameOnly, lookupZhForDrugName } from "../utils/medicalTranslation";
 
 const CATEGORY_EMOJIS: Record<DrugCategory | "All", string> = {
   All: "⊕", "Pain Relief": "💊", Allergy: "🌿", "Cold & Flu": "🤧",
@@ -58,6 +58,7 @@ export function DrugSearchPage() {
     language, searchQuery, setSearchQuery,
     activeCategory, setActiveCategory,
     otcRxFilter, setOtcRxFilter,
+    addToRecentSearches, toggleSavedApiDrug, isApiDrugSaved,
   } = useApp();
   const t = getTranslations(language);
   const liveQuery = searchQuery.trim();
@@ -98,6 +99,18 @@ export function DrugSearchPage() {
   useEffect(() => {
     document.title = `${t.search.title} — ${t.appName}`;
   }, [t.search.title, t.appName]);
+
+  // Track recent searches (debounced — save after results arrive)
+  useEffect(() => {
+    if (liveQuery.length < 2) return;
+    const timer = window.setTimeout(() => addToRecentSearches(liveQuery), 1500);
+    return () => window.clearTimeout(timer);
+  }, [liveQuery, addToRecentSearches]);
+
+  const handleRxNormNavigate = useCallback((rxcui: string, name: string) => {
+    addToRecentSearches(name);
+    navigate(`/drugs/api/${encodeURIComponent(rxcui)}`);
+  }, [navigate, addToRecentSearches]);
 
   const categories = ALL_CATEGORIES.filter((c) => c !== "All") as DrugCategory[];
   const otcOptions: { value: OtcRxFilter; label: string }[] = [
@@ -287,26 +300,50 @@ export function DrugSearchPage() {
             {liveTitle}
           </p>
           <div className="space-y-2">
-            {visibleLiveResults.map((result) => (
-              <button
-                key={result.rxcui}
-                type="button"
-                onClick={() => navigate(`/drugs/api/${encodeURIComponent(result.rxcui)}`)}
-                className="w-full rounded-2xl bg-white px-4 py-3.5 text-left shadow-sm transition active:scale-[0.98] dark:bg-[#1c1c1e]"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold leading-tight text-slate-900 dark:text-white">{result.name}</p>
-                  <span className="flex-shrink-0 rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                    RxNorm
-                  </span>
+            {visibleLiveResults.map((result) => {
+              const zhName = lookupZhForDrugName(result.name);
+              const saved = isApiDrugSaved(result.name);
+              return (
+                <div key={result.rxcui} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => handleRxNormNavigate(result.rxcui, result.name)}
+                    className="w-full rounded-2xl bg-white px-4 py-3.5 pr-12 text-left shadow-sm transition active:scale-[0.98] dark:bg-[#1c1c1e]"
+                  >
+                    {language === "zh" && zhName ? (
+                      <>
+                        <p className="text-sm font-semibold leading-tight text-slate-900 dark:text-white">{zhName}</p>
+                        <p className="text-xs text-slate-500 dark:text-[#8e8e93]">{result.name}</p>
+                      </>
+                    ) : (
+                      <p className="text-sm font-semibold leading-tight text-slate-900 dark:text-white">{result.name}</p>
+                    )}
+                    <p className="mt-0.5 text-xs text-slate-400 dark:text-[#636366]">
+                      <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 mr-1">RxNorm</span>
+                      {(language === "zh" ? TTY_BADGE_ZH[result.tty] : TTY_BADGE_EN[result.tty]) ?? result.tty}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); toggleSavedApiDrug(result.name); }}
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full transition active:scale-90 ${
+                      saved ? "text-blue-600 dark:text-[#0a84ff]" : "text-slate-300 dark:text-[#636366]"
+                    }`}
+                    aria-label={saved ? "Remove saved" : "Save drug"}
+                  >
+                    {saved ? (
+                      <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6.32 2.577a49.255 49.255 0 0111.36 0c1.497.174 2.57 1.46 2.57 2.93V21a.75.75 0 01-1.085.67L12 18.089l-7.165 3.583A.75.75 0 013.75 21V5.507c0-1.47 1.073-2.756 2.57-2.93z" />
+                      </svg>
+                    ) : (
+                      <svg className="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
+                      </svg>
+                    )}
+                  </button>
                 </div>
-                <p className="mt-0.5 text-xs text-slate-400 dark:text-[#636366]">
-                  {(language === "zh" ? TTY_BADGE_ZH[result.tty] : TTY_BADGE_EN[result.tty]) ?? result.tty}
-                  {" · "}
-                  {language === "zh" ? `RxCUI 药品标准编号 ${result.rxcui}` : `RXCUI ${result.rxcui}`}
-                </p>
-              </button>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

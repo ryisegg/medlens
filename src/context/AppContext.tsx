@@ -11,10 +11,12 @@ import type {
   ApiHistoryEntry,
   Drug,
   DrugCategory,
+  HealthProfile,
   Language,
   OtcRxFilter,
   PillIdentifierQuery,
   PillIdentifierResult,
+  RecentSearch,
   Reminder,
   SavedApiDrug,
   SymptomSuggestion,
@@ -70,6 +72,17 @@ function loadSavedApiDrugs(): SavedApiDrug[] {
 function loadApiHistory(): ApiHistoryEntry[] {
   return loadJSON<ApiHistoryEntry[]>("medlens_api_history", []);
 }
+function loadRecentSearches(): RecentSearch[] {
+  return loadJSON<RecentSearch[]>("medlens_recent_searches", []);
+}
+const DEFAULT_HEALTH_PROFILE: HealthProfile = { allergies: [], conditions: [], currentMeds: [] };
+function loadHealthProfile(): HealthProfile {
+  return loadJSON<HealthProfile>("medlens_health_profile", DEFAULT_HEALTH_PROFILE);
+}
+function loadRegion(): "US" | "CN" {
+  const v = loadStr("medlens_region", "US");
+  return v === "CN" ? "CN" : "US";
+}
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageRaw] = useState<Language>(loadLanguage);
@@ -88,6 +101,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [identifierResults, setIdentifierResults] = useState<PillIdentifierResult[]>([]);
   const [savedApiDrugs, setSavedApiDrugs] = useState<SavedApiDrug[]>(loadSavedApiDrugs);
   const [apiHistory, setApiHistory] = useState<ApiHistoryEntry[]>(loadApiHistory);
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>(loadRecentSearches);
+  const [healthProfile, setHealthProfile] = useState<HealthProfile>(loadHealthProfile);
+  const [region, setRegionRaw] = useState<"US" | "CN">(loadRegion);
 
   // ── Language ──────────────────────────────────────────────────────────────
   const setLanguage = useCallback((lang: Language) => {
@@ -242,6 +258,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try { localStorage.removeItem("medlens_api_history"); } catch { /* ignore */ }
   }, []);
 
+  // ── Recent searches ───────────────────────────────────────────────────────
+  const addToRecentSearches = useCallback((query: string) => {
+    const q = query.trim();
+    if (!q || q.length < 2) return;
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((s) => s.query.toLowerCase() !== q.toLowerCase());
+      const next = [{ query: q, searchedAt: Date.now() }, ...filtered].slice(0, 10);
+      saveJSON("medlens_recent_searches", next);
+      return next;
+    });
+  }, []);
+
+  const clearRecentSearches = useCallback(() => {
+    setRecentSearches([]);
+    try { localStorage.removeItem("medlens_recent_searches"); } catch { /* ignore */ }
+  }, []);
+
+  // ── Health profile ────────────────────────────────────────────────────────
+  const updateHealthProfile = useCallback((patch: Partial<HealthProfile>) => {
+    setHealthProfile((prev) => {
+      const next = { ...prev, ...patch };
+      saveJSON("medlens_health_profile", next);
+      return next;
+    });
+  }, []);
+
+  // ── Region ────────────────────────────────────────────────────────────────
+  const setRegion = useCallback((r: "US" | "CN") => {
+    setRegionRaw(r);
+    try { localStorage.setItem("medlens_region", r); } catch { /* ignore */ }
+  }, []);
+
   const value = useMemo<AppContextValue>(
     () => ({
       language, setLanguage,
@@ -262,6 +310,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       identifierResults, runIdentifier,
       savedApiDrugs, toggleSavedApiDrug, isApiDrugSaved,
       apiHistory, addToApiHistory, clearApiHistory,
+      recentSearches, addToRecentSearches, clearRecentSearches,
+      healthProfile, updateHealthProfile,
+      region, setRegion,
     }),
     [
       language, setLanguage,
@@ -277,6 +328,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       pillQuery, identifierResults, runIdentifier,
       savedApiDrugs, toggleSavedApiDrug, isApiDrugSaved,
       apiHistory, addToApiHistory, clearApiHistory,
+      recentSearches, addToRecentSearches, clearRecentSearches,
+      healthProfile, updateHealthProfile,
+      region, setRegion,
     ],
   );
 

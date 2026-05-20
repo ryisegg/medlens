@@ -143,6 +143,17 @@ export interface CabinetItem {
   notes?: string;
 }
 
+export interface HealthProfile {
+  allergies: string[];
+  conditions: string[];
+  currentMeds: string[];
+}
+
+export interface RecentSearch {
+  query: string;
+  searchedAt: number;
+}
+
 export interface SavedApiDrug {
   name: string;
   genericName?: string;
@@ -215,4 +226,17 @@ export interface AppContextValue {
   apiHistory: ApiHistoryEntry[];
   addToApiHistory: (name: string, genericName?: string) => void;
   clearApiHistory: () => void;
+
+  // Recent searches
+  recentSearches: RecentSearch[];
+  addToRecentSearches: (query: string) => void;
+  clearRecentSearches: () => void;
+
+  // Health safety profile
+  healthProfile: HealthProfile;
+  updateHealthProfile: (patch: Partial<HealthProfile>) => void;
+
+  // Region
+  region: "US" | "CN";
+  setRegion: (r: "US" | "CN") => void;
 }

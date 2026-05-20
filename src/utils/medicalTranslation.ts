@@ -95,6 +95,309 @@ export const SYMPTOM_CATEGORY_ZH: Record<string, string> = {
   "Vitamin D Supplementation": "维生素D补充",
 };
 
+// ─── ZH → EN drug name lookup (for search normalization) ───────────────────
+// Covers Chinese generic names, common brand names, and aliases → English
+export const ZH_TO_EN_DRUG: Record<string, string> = {
+  // Pain / anti-inflammatory
+  "布洛芬": "ibuprofen",
+  "对乙酰氨基酚": "acetaminophen",
+  "扑热息痛": "acetaminophen",
+  "泰诺": "acetaminophen",
+  "必理通": "acetaminophen",
+  "美林": "ibuprofen",
+  "芬必得": "ibuprofen",
+  "阿司匹林": "aspirin",
+  "萘普生": "naproxen",
+  "双氯芬酸": "diclofenac",
+  "吲哚美辛": "indomethacin",
+  "塞来昔布": "celecoxib",
+  "美洛昔康": "meloxicam",
+  "曲马多": "tramadol",
+  "可待因": "codeine",
+  "吗啡": "morphine",
+  "羟考酮": "oxycodone",
+  "氢可酮": "hydrocodone",
+  "芬太尼": "fentanyl",
+  "普瑞巴林": "pregabalin",
+  "加巴喷丁": "gabapentin",
+  "利多卡因": "lidocaine",
+  "舒马曲普坦": "sumatriptan",
+  "托吡酯": "topiramate",
+  // Antibiotics
+  "青霉素": "penicillin",
+  "阿莫西林": "amoxicillin",
+  "阿莫克拉": "amoxicillin",
+  "头孢氨苄": "cephalexin",
+  "头孢曲松": "ceftriaxone",
+  "阿奇霉素": "azithromycin",
+  "希舒美": "azithromycin",
+  "红霉素": "erythromycin",
+  "克拉霉素": "clarithromycin",
+  "林可霉素": "clindamycin",
+  "克林霉素": "clindamycin",
+  "多西环素": "doxycycline",
+  "环丙沙星": "ciprofloxacin",
+  "左氧氟沙星": "levofloxacin",
+  "可乐必妥": "levofloxacin",
+  "甲硝唑": "metronidazole",
+  "替硝唑": "tinidazole",
+  "磺胺甲噁唑": "trimethoprim-sulfamethoxazole",
+  "复方新诺明": "trimethoprim-sulfamethoxazole",
+  "万古霉素": "vancomycin",
+  "利福平": "rifampicin",
+  "异烟肼": "isoniazid",
+  // Antifungal / antiviral
+  "氟康唑": "fluconazole",
+  "大扶康": "fluconazole",
+  "伊曲康唑": "itraconazole",
+  "特比萘芬": "terbinafine",
+  "克霉唑": "clotrimazole",
+  "咪康唑": "miconazole",
+  "阿昔洛韦": "acyclovir",
+  "伐昔洛韦": "valacyclovir",
+  "奥司他韦": "oseltamivir",
+  "达菲": "oseltamivir",
+  "恩替卡韦": "entecavir",
+  "拉米夫定": "lamivudine",
+  // Cardiovascular
+  "氨氯地平": "amlodipine",
+  "络活喜": "amlodipine",
+  "硝苯地平": "nifedipine",
+  "赖诺普利": "lisinopril",
+  "依那普利": "enalapril",
+  "卡托普利": "captopril",
+  "雷米普利": "ramipril",
+  "氯沙坦": "losartan",
+  "科素亚": "losartan",
+  "缬沙坦": "valsartan",
+  "代文": "valsartan",
+  "厄贝沙坦": "irbesartan",
+  "美托洛尔": "metoprolol",
+  "倍他乐克": "metoprolol",
+  "比索洛尔": "bisoprolol",
+  "卡维地洛": "carvedilol",
+  "呋塞米": "furosemide",
+  "螺内酯": "spironolactone",
+  "华法林": "warfarin",
+  "利伐沙班": "rivaroxaban",
+  "达比加群": "dabigatran",
+  "阿哌沙班": "apixaban",
+  "氯吡格雷": "clopidogrel",
+  "波立维": "clopidogrel",
+  "替格瑞洛": "ticagrelor",
+  "阿托伐他汀": "atorvastatin",
+  "立普妥": "atorvastatin",
+  "瑞舒伐他汀": "rosuvastatin",
+  "可定": "rosuvastatin",
+  "辛伐他汀": "simvastatin",
+  "依折麦布": "ezetimibe",
+  "硝酸甘油": "nitroglycerin",
+  "地高辛": "digoxin",
+  "胺碘酮": "amiodarone",
+  "氢氯噻嗪": "hydrochlorothiazide",
+  // Diabetes
+  "二甲双胍": "metformin",
+  "格列吡嗪": "glipizide",
+  "格列本脲": "glibenclamide",
+  "格列美脲": "glimepiride",
+  "西格列汀": "sitagliptin",
+  "捷诺维": "sitagliptin",
+  "恩格列净": "empagliflozin",
+  "达格列净": "dapagliflozin",
+  "利拉鲁肽": "liraglutide",
+  "司美格鲁肽": "semaglutide",
+  "阿卡波糖": "acarbose",
+  "胰岛素": "insulin",
+  // Psychiatric / CNS
+  "舍曲林": "sertraline",
+  "左洛复": "sertraline",
+  "氟西汀": "fluoxetine",
+  "百忧解": "fluoxetine",
+  "艾司西酞普兰": "escitalopram",
+  "来士普": "escitalopram",
+  "帕罗西汀": "paroxetine",
+  "文拉法辛": "venlafaxine",
+  "米氮平": "mirtazapine",
+  "安非他酮": "bupropion",
+  "阿普唑仑": "alprazolam",
+  "佳乐定": "alprazolam",
+  "地西泮": "diazepam",
+  "安定": "diazepam",
+  "劳拉西泮": "lorazepam",
+  "氯硝西泮": "clonazepam",
+  "唑吡坦": "zolpidem",
+  "思诺思": "zolpidem",
+  "喹硫平": "quetiapine",
+  "思瑞康": "quetiapine",
+  "奥氮平": "olanzapine",
+  "再普乐": "olanzapine",
+  "利培酮": "risperidone",
+  "维思通": "risperidone",
+  "阿立哌唑": "aripiprazole",
+  "氟哌啶醇": "haloperidol",
+  "碳酸锂": "lithium",
+  "丙戊酸": "valproate",
+  "卡马西平": "carbamazepine",
+  "拉莫三嗪": "lamotrigine",
+  "左乙拉西坦": "levetiracetam",
+  "多奈哌齐": "donepezil",
+  "美金刚": "memantine",
+  "哌甲酯": "methylphenidate",
+  "利他林": "methylphenidate",
+  "褪黑素": "melatonin",
+  // Respiratory
+  "沙丁胺醇": "albuterol",
+  "万托林": "albuterol",
+  "沙美特罗": "salmeterol",
+  "噻托溴铵": "tiotropium",
+  "思力华": "tiotropium",
+  "异丙托溴铵": "ipratropium",
+  "布地奈德": "budesonide",
+  "普米克": "budesonide",
+  "氟替卡松": "fluticasone",
+  "孟鲁司特": "montelukast",
+  "顺尔宁": "montelukast",
+  "氨溴索": "ambroxol",
+  "乙酰半胱氨酸": "acetylcysteine",
+  "伪麻黄碱": "pseudoephedrine",
+  "右美沙芬": "dextromethorphan",
+  "愈创甘油醚": "guaifenesin",
+  // GI
+  "奥美拉唑": "omeprazole",
+  "洛赛克": "omeprazole",
+  "艾司奥美拉唑": "esomeprazole",
+  "耐信": "esomeprazole",
+  "兰索拉唑": "lansoprazole",
+  "泮托拉唑": "pantoprazole",
+  "雷尼替丁": "ranitidine",
+  "法莫替丁": "famotidine",
+  "甲氧氯普胺": "metoclopramide",
+  "多潘立酮": "domperidone",
+  "吗丁啉": "domperidone",
+  "昂丹司琼": "ondansetron",
+  "洛哌丁胺": "loperamide",
+  "易蒙停": "loperamide",
+  "次水杨酸铋": "bismuth subsalicylate",
+  "乳果糖": "lactulose",
+  "西甲硅油": "simethicone",
+  // Allergy
+  "苯海拉明": "diphenhydramine",
+  "苯那君": "diphenhydramine",
+  "氯苯那敏": "chlorpheniramine",
+  "扑尔敏": "chlorpheniramine",
+  "氯雷他定": "loratadine",
+  "开瑞坦": "loratadine",
+  "西替利嗪": "cetirizine",
+  "仙特明": "cetirizine",
+  "非索非那定": "fexofenadine",
+  "左西替利嗪": "levocetirizine",
+  "地氯雷他定": "desloratadine",
+  "肾上腺素": "epinephrine",
+  "EpiPen": "epinephrine",
+  // Dermatology
+  "氢化可的松": "hydrocortisone",
+  "曲安奈德": "triamcinolone",
+  "去炎松": "triamcinolone",
+  "糠酸莫米松": "mometasone",
+  "艾洛松": "mometasone",
+  "倍他米松": "betamethasone",
+  "氯倍他索": "clobetasol",
+  "他克莫司": "tacrolimus",
+  "普特彼": "tacrolimus",
+  "维A酸": "tretinoin",
+  "异维A酸": "isotretinoin",
+  "泰尔丝": "isotretinoin",
+  "苯甲酰过氧化物": "benzoyl peroxide",
+  "水杨酸": "salicylic acid",
+  "莫匹罗星": "mupirocin",
+  "百多邦": "mupirocin",
+  "炉甘石": "calamine",
+  // Thyroid / endocrine
+  "左甲状腺素": "levothyroxine",
+  "优甲乐": "levothyroxine",
+  "甲巯咪唑": "methimazole",
+  "丙硫氧嘧啶": "propylthiouracil",
+  "地塞米松": "dexamethasone",
+  "甲泼尼龙": "methylprednisolone",
+  "泼尼松": "prednisone",
+  "泼尼松龙": "prednisolone",
+  // Ortho / rheumatology
+  "别嘌醇": "allopurinol",
+  "非布司他": "febuxostat",
+  "秋水仙碱": "colchicine",
+  "甲氨蝶呤": "methotrexate",
+  "羟氯喹": "hydroxychloroquine",
+  "阿仑膦酸": "alendronate",
+  "环苯扎林": "cyclobenzaprine",
+  // Urology / men's health
+  "坦索罗辛": "tamsulosin",
+  "哈乐": "tamsulosin",
+  "非那雄胺": "finasteride",
+  "保列治": "finasteride",
+  "西地那非": "sildenafil",
+  "万艾可": "sildenafil",
+  "他达拉非": "tadalafil",
+  "希爱力": "tadalafil",
+  // Ophthalmology
+  "噻吗洛尔": "timolol",
+  "拉坦前列素": "latanoprost",
+  "妥布霉素": "tobramycin",
+  "人工泪液": "artificial tears",
+  // Emergency
+  "纳洛酮": "naloxone",
+  "阿托品": "atropine",
+  "活性炭": "activated charcoal",
+  "胰高血糖素": "glucagon",
+  // Vitamins / supplements
+  "维生素C": "vitamin c",
+  "维生素D": "vitamin d",
+  "维生素D3": "vitamin d3",
+  "维生素E": "vitamin e",
+  "维生素K": "vitamin k",
+  "维生素B1": "thiamine",
+  "维生素B2": "riboflavin",
+  "维生素B6": "pyridoxine",
+  "维生素B12": "cyanocobalamin",
+  "叶酸": "folic acid",
+  "硫酸亚铁": "ferrous sulfate",
+  "钙": "calcium",
+  "碳酸钙": "calcium carbonate",
+  "氧化镁": "magnesium oxide",
+  "葡萄糖酸锌": "zinc",
+  "鱼油": "fish oil",
+  "益生菌": "probiotics",
+  "辅酶Q10": "coenzyme q10",
+  "氨基葡萄糖": "glucosamine",
+};
+
+/** Returns true when the string contains Chinese characters */
+export function isChinese(text: string): boolean {
+  return /[一-鿿]/.test(text);
+}
+
+/**
+ * If the query is Chinese, try to map it to an English drug name for API search.
+ * Returns the English equivalent, or the original query if no match found.
+ */
+export function normalizeSearchInput(query: string): string {
+  const q = query.trim();
+  if (!q || !isChinese(q)) return q;
+
+  // Exact match
+  if (ZH_TO_EN_DRUG[q]) return ZH_TO_EN_DRUG[q];
+
+  // Substring match — longest key that appears in query wins
+  let best: { k: string; v: string } | null = null;
+  for (const [k, v] of Object.entries(ZH_TO_EN_DRUG)) {
+    if (q.includes(k)) {
+      if (!best || k.length > best.k.length) best = { k, v };
+    }
+  }
+  if (best) return best.v;
+
+  return q;
+}
+
 // ZH symptom keywords → EN equivalents for matching
 const ZH_SYMPTOM_TO_EN: Record<string, string[]> = {
   "头痛": ["headache"],
@@ -193,4 +496,23 @@ export function translateDrugNameOnly(name: string): string {
 
 export function translateCategory(categoryName: string): string {
   return SYMPTOM_CATEGORY_ZH[categoryName] ?? categoryName;
+}
+
+/**
+ * Given an English drug name, return the Chinese name if known.
+ * Checks DRUG_NAME_ZH first, then the reverse of ZH_TO_EN_DRUG.
+ */
+export function lookupZhForDrugName(name: string): string | null {
+  const key = name.toLowerCase().trim();
+  if (DRUG_NAME_ZH[key]) return DRUG_NAME_ZH[key];
+  // partial match
+  for (const [k, v] of Object.entries(DRUG_NAME_ZH)) {
+    if (key.includes(k) || k.includes(key)) return v;
+  }
+  // reverse lookup from ZH_TO_EN_DRUG
+  for (const [zh, en] of Object.entries(ZH_TO_EN_DRUG)) {
+    if (en.toLowerCase() === key) return zh;
+    if (key.includes(en.toLowerCase()) || en.toLowerCase().includes(key)) return zh;
+  }
+  return null;
 }

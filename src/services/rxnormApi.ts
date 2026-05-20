@@ -1,6 +1,7 @@
 import type { RxNormHit, ApiSearchResult } from "../types/api";
 import { getApiUrl, fetchJson } from "./apiClient";
 import { cacheGet, cacheSet } from "./cache";
+import { normalizeSearchInput } from "../utils/medicalTranslation";
 
 const BASE = "https://rxnav.nlm.nih.gov/REST";
 
@@ -53,8 +54,10 @@ async function searchRxNormDirect(q: string): Promise<ApiSearchResult[]> {
 }
 
 export async function searchRxNorm(query: string): Promise<ApiSearchResult[]> {
-  const q = query.trim();
-  if (!q) return [];
+  const raw = query.trim();
+  if (!raw) return [];
+  // Translate Chinese input to English before hitting RxNorm
+  const q = normalizeSearchInput(raw);
 
   const cacheKey = `rxnorm_search_${q.toLowerCase()}`;
   const cached = cacheGet<ApiSearchResult[]>(cacheKey);
