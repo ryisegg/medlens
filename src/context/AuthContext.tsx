@@ -78,14 +78,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void runSync(user.id, user.email);
   }, [user?.id, user?.email, runSync]);
 
+  const profileUrl = `${window.location.origin}${import.meta.env.BASE_URL}profile`;
+
   const signInWithEmail = useCallback(async (email: string): Promise<{ error: string | null }> => {
     if (!supabase) return { error: "Auth not configured" };
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/profile` },
+      options: { emailRedirectTo: profileUrl },
     });
     return { error: error?.message ?? null };
-  }, []);
+  }, [profileUrl]);
 
   const signInWithPassword = useCallback(async (email: string, password: string) => {
     if (!supabase) return { error: "Auth not configured" };
@@ -98,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/profile` },
+      options: { emailRedirectTo: profileUrl },
     });
     if (error) return { error: error.message };
     const needsConfirmation = !data.session;
@@ -110,16 +112,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     return { error: null, needsConfirmation };
-  }, []);
+  }, [profileUrl]);
 
   const signInWithGoogle = useCallback(async (): Promise<{ error: string | null }> => {
     if (!supabase) return { error: "Auth not configured" };
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/profile` },
+      options: { redirectTo: profileUrl },
     });
     return { error: error?.message ?? null };
-  }, []);
+  }, [profileUrl]);
 
   const signOut = useCallback(async () => {
     if (!supabase) return;
@@ -133,7 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const syncNow = useCallback(async () => {
     if (!user?.id) return null;
     return runSync(user.id, user.email);
-  }, [runSync, user?.email, user?.id]);
+  }, [runSync, user]);
 
   return (
     <AuthContext.Provider
