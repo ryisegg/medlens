@@ -38,4 +38,14 @@ export interface TCMHerb {
   commonFormulas: string[];
   modernResearch: string;
   notes: string;
+
+  // ── Optional English fields (manually filled for top high-frequency herbs) ──
+  functionsEn?: string[];
+  indicationsEn?: string[];
+  dosageEn?: string;
+  contraindicationsEn?: string[];
+  commonFormulasEn?: string[];
+  modernResearchEn?: string;
+  notesEn?: string;
+  aliasesEn?: string[];
 }
