@@ -1,14 +1,16 @@
 import { NavLink } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Pill, Activity, Calendar, Archive, User } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  House, Pill, Heartbeat, FirstAidKit, UserCircle,
+} from "@phosphor-icons/react";
 import { useApp } from "../../context/AppContext";
 
 const TABS = [
-  { to: "/drugs",    key: "search",    Icon: Pill,     labelEn: "Medicines",  labelZh: "查药"  },
-  { to: "/symptoms", key: "symptoms",  Icon: Activity,  labelEn: "Symptoms",   labelZh: "症状"  },
-  { to: "/calendar", key: "calendar",  Icon: Calendar,  labelEn: "Calendar",   labelZh: "日历"  },
-  { to: "/cabinet",  key: "cabinet",   Icon: Archive,   labelEn: "Cabinet",    labelZh: "药箱"  },
-  { to: "/profile",  key: "profile",   Icon: User,      labelEn: "Profile",    labelZh: "我的"  },
+  { to: "/",         key: "home",     Icon: House,       labelEn: "Home",     labelZh: "首页" },
+  { to: "/drugs",    key: "drugs",    Icon: Pill,        labelEn: "Search",   labelZh: "查药" },
+  { to: "/symptoms", key: "symptoms", Icon: Heartbeat,   labelEn: "Symptoms", labelZh: "症状" },
+  { to: "/cabinet",  key: "cabinet",  Icon: FirstAidKit, labelEn: "Cabinet",  labelZh: "药箱" },
+  { to: "/profile",  key: "profile",  Icon: UserCircle,  labelEn: "Profile",  labelZh: "我的" },
 ] as const;
 
 export function TabBar() {
@@ -24,45 +26,42 @@ export function TabBar() {
         boxShadow: "0 -1px 0 rgba(0,0,0,0.04), 0 -8px 24px rgba(0,0,0,0.05)",
       }}
     >
-      <div className="flex h-14 items-center">
+      <div className="flex h-16 items-center">
         {TABS.map(({ to, Icon, labelEn, labelZh }) => (
           <NavLink
             key={to}
             to={to}
-            className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1"
+            end={to === "/"}
+            className="flex flex-1 flex-col items-center justify-center"
             aria-label={isZh ? labelZh : labelEn}
           >
             {({ isActive }) => (
-              <div className="flex flex-col items-center gap-0.5">
-                <div className="relative flex h-7 w-7 items-center justify-center">
-                  <AnimatePresence>
-                    {isActive && (
-                      <motion.div
-                        key="pill"
-                        layoutId="tab-pill"
-                        className="absolute inset-0 rounded-full bg-blue-50 dark:bg-blue-950/50"
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                      />
-                    )}
-                  </AnimatePresence>
+              <div className="flex flex-col items-center">
+                <motion.div
+                  className="relative flex h-9 w-9 items-center justify-center"
+                  animate={{ scale: isActive ? 1 : 0.92 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 24 }}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="tab-pill"
+                      className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 shadow-md shadow-blue-500/30"
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
+                  )}
                   <Icon
-                    size={19}
-                    strokeWidth={isActive ? 2.2 : 1.7}
-                    className={`relative z-10 transition-colors duration-200 ${
-                      isActive
-                        ? "text-blue-600 dark:text-blue-400"
-                        : "text-slate-400 dark:text-slate-500"
+                    size={22}
+                    weight={isActive ? "fill" : "duotone"}
+                    className={`relative z-10 transition-colors ${
+                      isActive ? "text-white" : "text-slate-400 dark:text-slate-500"
                     }`}
                   />
-                </div>
+                </motion.div>
                 <span
-                  className={`text-[10px] font-medium leading-none transition-colors duration-200 ${
+                  className={`mt-0.5 text-[10px] leading-none transition-all ${
                     isActive
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-slate-400 dark:text-slate-500"
+                      ? "font-bold text-blue-600 dark:text-blue-400"
+                      : "font-medium text-slate-400 dark:text-slate-500"
                   }`}
                 >
                   {isZh ? labelZh : labelEn}

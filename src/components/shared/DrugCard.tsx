@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, Pill, ChevronRight } from "lucide-react";
+import { Heart, Pill, CaretRight } from "@phosphor-icons/react";
 import type { Drug, DrugCategory } from "../../types";
 import { useApp } from "../../context/AppContext";
 import { translateDrugNameOnly, DRUG_CATEGORY_ZH } from "../../utils/medicalTranslation";
@@ -51,7 +51,7 @@ export function DrugCard({ drug, onClick }: DrugCardProps) {
       >
         {/* Category icon area */}
         <div className={`flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl ${catConfig.bg} ${catConfig.darkBg}`}>
-          <Pill size={20} className={`${catConfig.color} ${catConfig.darkColor}`} />
+          <Pill size={22} weight="duotone" className={`${catConfig.color} ${catConfig.darkColor}`} />
         </div>
 
         {/* Content */}
@@ -88,7 +88,7 @@ export function DrugCard({ drug, onClick }: DrugCardProps) {
           </div>
         </div>
 
-        <ChevronRight size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600" />
+        <CaretRight size={16} weight="bold" className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 dark:text-slate-600" />
       </button>
 
       {/* Favorite button */}
@@ -103,7 +103,7 @@ export function DrugCard({ drug, onClick }: DrugCardProps) {
         }`}
         aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
       >
-        <Heart size={18} fill={isFav ? "currentColor" : "none"} strokeWidth={isFav ? 0 : 1.8} />
+        <Heart size={20} weight={isFav ? "fill" : "regular"} />
       </motion.button>
     </motion.div>
   );

@@ -1,13 +1,15 @@
 import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { Search, X, ChevronRight } from "lucide-react";
 import {
-  Search, Pill, Activity, ScanLine, Leaf, Home, HeartPulse,
-  Bell, BellPlus, ChevronRight, AlertTriangle,
-  Calendar, Archive,
-  Thermometer, Wind, Snowflake, Sun, Flame,
-  X, User, Sparkles, ShieldAlert,
-} from "lucide-react";
+  House, Pill, Leaf, Heartbeat,
+  Camera, Plant,
+  Bell, BellRinging, WarningCircle, FirstAidKit,
+  CalendarBlank, ShieldWarning,
+  Thermometer, Wind, Snowflake, Sun, Fire, Sparkle,
+  UserCircle,
+} from "@phosphor-icons/react";
 import { useApp } from "../context/AppContext";
 import { useMedication } from "../context/MedicationContext";
 import { getTranslations } from "../i18n";
@@ -33,17 +35,19 @@ const stagger: Variants = {
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const HOME_TABS = [
-  { key: "home"    as const, labelZh: "首页", labelEn: "Home",      Icon: Home       },
-  { key: "western" as const, labelZh: "西药", labelEn: "Medicines", Icon: Pill       },
-  { key: "tcm"     as const, labelZh: "中药", labelEn: "TCM",       Icon: Leaf       },
-  { key: "health"  as const, labelZh: "健康", labelEn: "Health",    Icon: HeartPulse },
+  { key: "home"    as const, labelZh: "首页", labelEn: "Home",      Icon: House     },
+  { key: "western" as const, labelZh: "西药", labelEn: "Medicines", Icon: Pill      },
+  { key: "tcm"     as const, labelZh: "中药", labelEn: "TCM",       Icon: Plant     },
+  { key: "health"  as const, labelZh: "健康", labelEn: "Health",    Icon: Heartbeat },
 ];
 
 type HomeTabKey = typeof HOME_TABS[number]["key"];
 
+type PhosphorIconType = React.ComponentType<{ size?: number; className?: string; weight?: "thin" | "light" | "regular" | "bold" | "fill" | "duotone" }>;
+
 const WESTERN_CATS: {
   cat: DrugCategory;
-  Icon: React.FC<{ size?: number; className?: string }>;
+  Icon: PhosphorIconType;
   shortZh: string;
   shortEn: string;
   color: string;
@@ -52,11 +56,11 @@ const WESTERN_CATS: {
   { cat: "Pain Relief",        Icon: Thermometer, shortZh: "止痛",   shortEn: "Pain Relief", color: "text-rose-600",   bg: "bg-rose-50 dark:bg-rose-950/30"   },
   { cat: "Allergy",            Icon: Wind,        shortZh: "过敏",   shortEn: "Allergy",     color: "text-purple-600", bg: "bg-purple-50 dark:bg-purple-950/30"},
   { cat: "Cold & Flu",         Icon: Snowflake,   shortZh: "感冒",   shortEn: "Cold & Flu",  color: "text-blue-600",   bg: "bg-blue-50 dark:bg-blue-950/30"   },
-  { cat: "Digestive Health",   Icon: Flame,       shortZh: "肠胃",   shortEn: "Digestive",   color: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-950/30"},
-  { cat: "Skin",               Icon: Sparkles,    shortZh: "皮肤",   shortEn: "Skin",        color: "text-emerald-600",bg: "bg-emerald-50 dark:bg-emerald-950/30"},
+  { cat: "Digestive Health",   Icon: Fire,        shortZh: "肠胃",   shortEn: "Digestive",   color: "text-orange-600", bg: "bg-orange-50 dark:bg-orange-950/30"},
+  { cat: "Skin",               Icon: Sparkle,     shortZh: "皮肤",   shortEn: "Skin",        color: "text-emerald-600",bg: "bg-emerald-50 dark:bg-emerald-950/30"},
   { cat: "Sleep",              Icon: Sun,         shortZh: "睡眠",   shortEn: "Sleep",       color: "text-indigo-600", bg: "bg-indigo-50 dark:bg-indigo-950/30"},
   { cat: "Vitamins",           Icon: Leaf,        shortZh: "营养",   shortEn: "Vitamins",    color: "text-amber-600",  bg: "bg-amber-50 dark:bg-amber-950/30" },
-  { cat: "Chronic Conditions", Icon: Activity,    shortZh: "慢病",   shortEn: "Chronic",     color: "text-slate-600",  bg: "bg-slate-100 dark:bg-slate-800/40"},
+  { cat: "Chronic Conditions", Icon: Heartbeat,   shortZh: "慢病",   shortEn: "Chronic",     color: "text-slate-600",  bg: "bg-slate-100 dark:bg-slate-800/40"},
 ];
 
 const TCM_QUICK_CATS: { cat: TCMCategory; emoji: string }[] = [
@@ -288,7 +292,7 @@ function HomeTab({
         >
           <div className="flex items-start gap-3">
             <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50">
-              <AlertTriangle size={15} className="text-amber-600 dark:text-amber-400" />
+              <WarningCircle size={16} weight="fill" className="text-amber-600 dark:text-amber-400" />
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold text-amber-800 dark:text-amber-300">
@@ -310,10 +314,10 @@ function HomeTab({
       {/* Quick Actions 2×2 */}
       <motion.div variants={fadeUp} className="grid grid-cols-2 gap-2.5">
         {[
-          { label: isZh ? "西药查询" : "Medicines",    sub: isZh ? "药品信息、用法用量" : "Dosage & interactions", Icon: Pill,     gradient: "from-blue-500 to-blue-700",     shadow: "shadow-blue-600/25",   action: () => navigate("/drugs") },
-          { label: isZh ? "中药库"   : "TCM Herbs",    sub: isZh ? "本草、方剂、交互"     : "Herbs, formulas",        Icon: Leaf,     gradient: "from-emerald-500 to-teal-600",  shadow: "shadow-emerald-600/25",action: () => navigate("/drugs", { state: { mode: "tcm" } }) },
-          { label: isZh ? "症状分析" : "Symptom Check", sub: isZh ? "AI 智能建议"          : "AI-powered advice",      Icon: Activity, gradient: "from-violet-500 to-purple-700", shadow: "shadow-violet-600/25", action: () => { setSymptomInput(""); navigate("/symptoms"); } },
-          { label: isZh ? "识别药片" : "Pill Identifier",sub: isZh ? "外观印字识别"        : "ID by imprint/shape",    Icon: ScanLine, gradient: "from-amber-400 to-orange-500",  shadow: "shadow-amber-500/25",  action: () => navigate("/identifier") },
+          { label: isZh ? "西药查询" : "Medicines",    sub: isZh ? "药品信息、用法用量" : "Dosage & interactions", Icon: Pill,        gradient: "from-blue-500 to-blue-700",     shadow: "shadow-blue-600/25",   action: () => navigate("/drugs") },
+          { label: isZh ? "中药库"   : "TCM Herbs",    sub: isZh ? "本草、方剂、交互"     : "Herbs, formulas",        Icon: Plant,       gradient: "from-emerald-500 to-teal-600",  shadow: "shadow-emerald-600/25",action: () => navigate("/drugs", { state: { mode: "tcm" } }) },
+          { label: isZh ? "症状分析" : "Symptom Check", sub: isZh ? "AI 智能建议"          : "AI-powered advice",      Icon: Heartbeat,   gradient: "from-violet-500 to-purple-700", shadow: "shadow-violet-600/25", action: () => { setSymptomInput(""); navigate("/symptoms"); } },
+          { label: isZh ? "识别药片" : "Pill Identifier",sub: isZh ? "外观印字识别"        : "ID by imprint/shape",    Icon: Camera,      gradient: "from-amber-400 to-orange-500",  shadow: "shadow-amber-500/25",  action: () => navigate("/identifier") },
         ].map(({ label, sub, Icon, gradient, shadow, action }) => (
           <motion.button
             key={label}
@@ -322,8 +326,8 @@ function HomeTab({
             whileTap={{ scale: 0.96 }}
             className={`rounded-2xl bg-gradient-to-br ${gradient} px-4 py-4 text-left text-white shadow-lg ${shadow}`}
           >
-            <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-white/20">
-              <Icon size={19} strokeWidth={1.8} />
+            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+              <Icon size={22} weight="duotone" />
             </div>
             <p className="text-[13px] font-bold leading-tight">{label}</p>
             <p className="mt-0.5 text-[11px] text-white/70">{sub}</p>
@@ -446,8 +450,8 @@ function WesternTab({
           onClick={() => { setOtcRxFilter("OTC"); navigate("/drugs"); }}
           className="flex items-center gap-2.5 rounded-2xl bg-emerald-50 px-4 py-3 text-left active:scale-[0.98] dark:bg-emerald-950/30"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50">
-            <Pill size={18} className="text-emerald-700 dark:text-emerald-300" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 dark:bg-emerald-900/50">
+            <Pill size={22} weight="duotone" className="text-emerald-700 dark:text-emerald-300" />
           </div>
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">OTC</p>
@@ -459,8 +463,8 @@ function WesternTab({
           onClick={() => { setOtcRxFilter("Rx"); navigate("/drugs"); }}
           className="flex items-center gap-2.5 rounded-2xl bg-amber-50 px-4 py-3 text-left active:scale-[0.98] dark:bg-amber-950/30"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/50">
-            <ShieldAlert size={18} className="text-amber-700 dark:text-amber-300" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 dark:bg-amber-900/50">
+            <ShieldWarning size={22} weight="duotone" className="text-amber-700 dark:text-amber-300" />
           </div>
           <div>
             <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">Rx</p>
@@ -481,8 +485,8 @@ function WesternTab({
               onClick={() => { setActiveCategory(cat); navigate("/drugs"); }}
               className="flex flex-col items-center rounded-2xl bg-white p-3 shadow-soft dark:bg-[#1c1c1e]"
             >
-              <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${bg}`}>
-                <Icon size={18} className={color} />
+              <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${bg}`}>
+                <Icon size={22} weight="duotone" className={color} />
               </div>
               <p className="mt-1.5 text-[11px] font-semibold text-slate-700 dark:text-white text-center leading-tight">
                 {isZh ? shortZh : shortEn}
@@ -654,7 +658,7 @@ function HealthTab({
           onClick={() => navigate("/calendar")}
           className="flex flex-col items-start gap-1.5 rounded-2xl bg-blue-50 p-3 text-left active:scale-[0.98] dark:bg-blue-950/30"
         >
-          <Calendar size={18} className="text-blue-500 dark:text-blue-400" />
+          <CalendarBlank size={22} weight="duotone" className="text-blue-500 dark:text-blue-400" />
           <p className="text-lg font-black tabular-nums text-blue-700 dark:text-blue-300 leading-none">{schedules.length}</p>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">{isZh ? "用药计划" : "Schedules"}</p>
         </button>
@@ -663,7 +667,7 @@ function HealthTab({
           onClick={() => navigate("/cabinet")}
           className="flex flex-col items-start gap-1.5 rounded-2xl bg-emerald-50 p-3 text-left active:scale-[0.98] dark:bg-emerald-950/30"
         >
-          <Archive size={18} className="text-emerald-600 dark:text-emerald-400" />
+          <FirstAidKit size={22} weight="duotone" className="text-emerald-600 dark:text-emerald-400" />
           <p className="text-lg font-black tabular-nums text-emerald-700 dark:text-emerald-300 leading-none">{cabinetItems.length}</p>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-400">{isZh ? "药箱库存" : "Cabinet"}</p>
         </button>
@@ -672,7 +676,7 @@ function HealthTab({
           onClick={() => navigate("/profile")}
           className="flex flex-col items-start gap-1.5 rounded-2xl bg-violet-50 p-3 text-left active:scale-[0.98] dark:bg-violet-950/30"
         >
-          <HeartPulse size={18} className="text-violet-600 dark:text-violet-400" />
+          <Heartbeat size={22} weight="duotone" className="text-violet-600 dark:text-violet-400" />
           <p className="text-lg font-black tabular-nums text-violet-700 dark:text-violet-300 leading-none">{profileItemCount}</p>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-violet-600 dark:text-violet-400">{isZh ? "健康档案" : "Health"}</p>
         </button>
@@ -682,13 +686,13 @@ function HealthTab({
       <motion.div variants={fadeUp} className="rounded-2xl bg-white shadow-soft dark:bg-[#1c1c1e]">
         <div className="flex items-center justify-between px-4 pt-4">
           <div className="flex items-center gap-2">
-            <Bell size={14} className="text-slate-400 dark:text-slate-500" />
+            <Bell size={14} weight="fill" className="text-slate-400 dark:text-slate-500" />
             <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
               {isZh ? "用药提醒" : "Reminders"}
             </p>
           </div>
           <button type="button" onClick={() => setShowAddReminder(true)} className="flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
-            <BellPlus size={13} /> {isZh ? "添加" : "Add"}
+            <BellRinging size={13} weight="fill" /> {isZh ? "添加" : "Add"}
           </button>
         </div>
         {reminders.length === 0 ? (
@@ -698,7 +702,7 @@ function HealthTab({
               onClick={() => setShowAddReminder(true)}
               className="flex w-full items-center gap-3 rounded-xl border border-dashed border-slate-200 px-4 py-3 active:scale-[0.99] dark:border-white/10"
             >
-              <BellPlus size={16} className="text-blue-500 dark:text-blue-400" />
+              <BellRinging size={18} weight="duotone" className="text-blue-500 dark:text-blue-400" />
               <p className="text-[12px] text-slate-500 dark:text-slate-400">{isZh ? "添加用药提醒，不漏服" : "Set a reminder — never miss a dose"}</p>
             </button>
           </div>
@@ -737,8 +741,8 @@ function HealthTab({
           onClick={() => navigate("/profile")}
           className="flex w-full items-center gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 dark:bg-violet-950/30">
-            <User size={18} className="text-violet-600 dark:text-violet-400" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-50 dark:bg-violet-950/30">
+            <UserCircle size={22} weight="duotone" className="text-violet-600 dark:text-violet-400" />
           </div>
           <div className="flex-1 text-left">
             <p className="text-[13px] font-semibold text-slate-900 dark:text-white">{isZh ? "健康档案" : "Health Profile"}</p>
@@ -752,8 +756,8 @@ function HealthTab({
           onClick={() => navigate("/safety")}
           className="flex w-full items-center gap-3 px-4 py-3.5 transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-950/30">
-            <AlertTriangle size={18} className="text-rose-600 dark:text-rose-400" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-950/30">
+            <WarningCircle size={22} weight="duotone" className="text-rose-600 dark:text-rose-400" />
           </div>
           <div className="flex-1 text-left">
             <p className="text-[13px] font-semibold text-slate-900 dark:text-white">{isZh ? "急救信息" : "Emergency Info"}</p>
@@ -808,9 +812,9 @@ export function HomePage() {
         <button
           type="button"
           onClick={() => navigate("/safety")}
-          className="flex items-center gap-1.5 rounded-2xl bg-rose-500 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-rose-500/30 active:scale-95"
+          className="flex items-center gap-1.5 rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-rose-500/30 active:scale-95"
         >
-          <AlertTriangle size={13} strokeWidth={2.5} />
+          <WarningCircle size={15} weight="fill" />
           {isZh ? "急救" : "SOS"}
         </button>
       </motion.div>
@@ -842,7 +846,7 @@ export function HomePage() {
                     ? "text-slate-900 dark:text-white"
                     : "text-slate-500 dark:text-slate-500"
                 }`}>
-                  <Icon size={13} strokeWidth={isActive ? 2.4 : 1.8} />
+                  <Icon size={15} weight={isActive ? "fill" : "duotone"} />
                   {isZh ? labelZh : labelEn}
                 </span>
               </button>
